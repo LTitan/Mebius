@@ -10,13 +10,13 @@ import (
 	time "time"
 
 	pkgapis "github.com/LTitan/Mebius/pkg/apis"
+	mebius "github.com/LTitan/Mebius/pkg/clients/clientset/mebius"
 	internalinterfaces "github.com/LTitan/Mebius/pkg/clients/informer/externalversions/internalinterfaces"
+	apis "github.com/LTitan/Mebius/pkg/clients/lister/pkg/apis"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
 	cache "k8s.io/client-go/tools/cache"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	apis "k8s.io/kubernetes/pkg/client/listers/pkg/apis"
 )
 
 // ClusterInformer provides access to a shared informer and lister for
@@ -35,14 +35,14 @@ type clusterInformer struct {
 // NewClusterInformer constructs a new informer for Cluster type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewClusterInformer(client clientset.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+func NewClusterInformer(client mebius.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
 	return NewFilteredClusterInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
 // NewFilteredClusterInformer constructs a new informer for Cluster type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredClusterInformer(client clientset.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredClusterInformer(client mebius.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
@@ -64,7 +64,7 @@ func NewFilteredClusterInformer(client clientset.Interface, namespace string, re
 	)
 }
 
-func (f *clusterInformer) defaultInformer(client clientset.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+func (f *clusterInformer) defaultInformer(client mebius.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
 	return NewFilteredClusterInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
