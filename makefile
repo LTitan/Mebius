@@ -4,6 +4,12 @@ CLIENTSET=${PROJECT}/pkg/clients/clientset
 INFORMER=${PROJECT}/pkg/clients/informer
 LISTER=${PROJECT}/pkg/clients/lister
 
+ifndef $(GOPATH)
+	GOPATH=$(shell go env GOPATH)
+	export GOPATH
+endif
+GOPATH_SRC=${GOPATH}/src
+
 all: register-gen deepcopy-gen defaulter-gen openapi-gen client-gen lister-gen informer-gen
 
 install-tools:
@@ -19,26 +25,35 @@ install-tools:
 	go install github.com/gogo/protobuf/protoc-gen-gogo@v1.3.2
 
 deepcopy-gen:
+	@echo ">> generating pkg/apis/deepcopy_generated.go"
 	deepcopy-gen --input-dirs ${PROJECT_APIS} \
 		--output-package ${PROJECT_APIS} -h hack.txt \
 	--alsologtostderr
+	mv ${GOPATH_SRC}/${PROJECT_APIS}/deepcopy_generated.go pkg/apis
 
 register-gen:
+	@echo ">> generating pkg/apis/zz_generated.register.go"
 	register-gen --input-dirs ${PROJECT_APIS} \
 		--output-package ${PROJECT_APIS} -h hack.txt \
 	--alsologtostderr
+	mv ${GOPATH_SRC}/${PROJECT_APIS}/zz_generated.register.go pkg/apis
 
 defaulter-gen:
+	@echo ">> generating pkg/apis/zz_generated.defaults.go"
 	defaulter-gen --input-dirs ${PROJECT_APIS} \
 		--output-package ${PROJECT_APIS} -h hack.txt \
 	--alsologtostderr
+	mv ${GOPATH_SRC}/${PROJECT_APIS}/zz_generated.defaults.go pkg/apis
 
 openapi-gen:
+	@echo ">> generating pkg/apis/openapi_generated.go"
 	openapi-gen --input-dirs ${PROJECT_APIS} \
 		--output-package ${PROJECT_APIS} -h hack.txt \
 	--alsologtostderr
+	mv ${GOPATH_SRC}/${PROJECT_APIS}/openapi_generated.go pkg/apis
 
 client-gen:
+	@echo ">> generating pkg/clients/clientset..."
 	rm -rf pkg/clients/clientset
 	client-gen --input-dirs ${PROJECT_APIS} \
 		--clientset-name='mebius' \
@@ -47,19 +62,24 @@ client-gen:
 		--input='pkg/apis' \
 		--output-package ${CLIENTSET} -h hack.txt \
 	--alsologtostderr
+	mv ${GOPATH_SRC}/${CLIENTSET} pkg/clients
 
 lister-gen:
+	@echo ">> generating pkg/clients/lister..."
 	rm -rf pkg/clients/lister
 	lister-gen --input-dirs ${PROJECT_APIS} \
 		--output-package ${LISTER} -h hack.txt \
 	--alsologtostderr
+	mv ${GOPATH_SRC}/${LISTER} pkg/clients
 
 informer-gen:
+	@echo ">> generating pkg/clients/informer..."
 	rm -rf pkg/clients/informer
 	informer-gen --input-dirs ${PROJECT_APIS} --versioned-clientset-package ${CLIENTSET}/mebius \
 		--output-package ${INFORMER} -h hack.txt \
 		--listers-package ${LISTER} \
 	--alsologtostderr
+	mv ${GOPATH_SRC}/${INFORMER} pkg/clients
 
 go-to-protobuf:
 	go-to-protobuf --output-base="${GOPATH}/src" --packages="${PROJECT_APIS}" -h hack.txt
