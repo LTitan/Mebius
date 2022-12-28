@@ -24,8 +24,9 @@ option (gogoproto.goproto_enum_prefix_all) = false;
 option (gogoproto.goproto_getters_all) = false;
 option go_package = "github.com/LTitan/Mebius/pkg/apis";
 
-// +kubebuilder:obeject:root=true
-// +kubebuilder:resource:path=cluster
+// +kubebuilder:object:root=true
+// +kubebuilder:resource:path=clusters
+// +kubebuilder:resource:shortName=cluster
 // +kubebuilder:subresource:status
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -47,7 +48,7 @@ message ClusterCondition {
   optional k8s.io.apimachinery.pkg.apis.meta.v1.Time update_time = 4 [(gogoproto.customname) = "UpdateTime"];
 }
 
-// +kubebuilder:obeject:root=true
+// +kubebuilder:object:root=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 message ClusterList {
   optional k8s.io.apimachinery.pkg.apis.meta.v1.ListMeta metadata = 1 [(gogoproto.customname) = "ListMeta", (gogoproto.nullable) = false];
@@ -63,4 +64,3 @@ message ClusterSpec {
 message ClusterStatus {
   repeated ClusterCondition condition = 1 [(gogoproto.customname) = "Condition", (gogoproto.nullable) = false];
 }
-

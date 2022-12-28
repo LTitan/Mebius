@@ -2,8 +2,9 @@ package apis
 
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-// +kubebuilder:obeject:root=true
-// +kubebuilder:resource:path=cluster
+// +kubebuilder:object:root=true
+// +kubebuilder:resource:path=clusters
+// +kubebuilder:resource:shortName=cluster
 // +kubebuilder:subresource:status
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -38,7 +39,7 @@ type ClusterSpec struct {
 	Attributes map[string]string `json:"attributes,omitempty" protobuf:"bytes,1,rep,name=attributes"`
 }
 
-// +kubebuilder:obeject:root=true
+// +kubebuilder:object:root=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type ClusterList struct {
 	metav1.TypeMeta `json:",inline"`
