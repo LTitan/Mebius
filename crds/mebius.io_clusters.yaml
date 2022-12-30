@@ -5,13 +5,15 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.10.0
   creationTimestamp: null
-  name: cluster.mebius.io
+  name: clusters.mebius.io
 spec:
   group: mebius.io
   names:
     kind: Cluster
     listKind: ClusterList
-    plural: cluster
+    plural: clusters
+    shortNames:
+    - cluster
     singular: cluster
   scope: Namespaced
   versions:
