@@ -11,8 +11,8 @@ import (
 	time "time"
 
 	mebius "github.com/LTitan/Mebius/pkg/clients/clientset/mebius"
+	apis "github.com/LTitan/Mebius/pkg/clients/informer/externalversions/apis"
 	internalinterfaces "github.com/LTitan/Mebius/pkg/clients/informer/externalversions/internalinterfaces"
-	pkg "github.com/LTitan/Mebius/pkg/clients/informer/externalversions/pkg"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -159,9 +159,9 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
-	Mebius() pkg.Interface
+	Mebius() apis.Interface
 }
 
-func (f *sharedInformerFactory) Mebius() pkg.Interface {
-	return pkg.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Mebius() apis.Interface {
+	return apis.New(f, f.namespace, f.tweakListOptions)
 }

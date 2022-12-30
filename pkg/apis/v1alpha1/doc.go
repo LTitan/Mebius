@@ -2,4 +2,4 @@
 // +k8s:deepcopy-gen=package
 // +k8s:defaulter-gen=TypeMeta
 // +groupName=mebius.io
-package apis
+package v1alpha1

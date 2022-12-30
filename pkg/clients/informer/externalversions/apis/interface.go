@@ -6,16 +6,17 @@ this is the Mebius Project
 package apis
 
 import (
+	v1alpha1 "github.com/LTitan/Mebius/pkg/clients/informer/externalversions/apis/v1alpha1"
 	internalinterfaces "github.com/LTitan/Mebius/pkg/clients/informer/externalversions/internalinterfaces"
 )
 
-// Interface provides access to all the informers in this group version.
+// Interface provides access to each of this group's versions.
 type Interface interface {
-	// Clusters returns a ClusterInformer.
-	Clusters() ClusterInformer
+	// V1alpha1 provides access to shared informers for resources in V1alpha1.
+	V1alpha1() v1alpha1.Interface
 }
 
-type version struct {
+type group struct {
 	factory          internalinterfaces.SharedInformerFactory
 	namespace        string
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
@@ -23,10 +24,10 @@ type version struct {
 
 // New returns a new Interface.
 func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakListOptions internalinterfaces.TweakListOptionsFunc) Interface {
-	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
+	return &group{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// Clusters returns a ClusterInformer.
-func (v *version) Clusters() ClusterInformer {
-	return &clusterInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// V1alpha1 returns a new v1alpha1.Interface.
+func (g *group) V1alpha1() v1alpha1.Interface {
+	return v1alpha1.New(g.factory, g.namespace, g.tweakListOptions)
 }

@@ -1,5 +1,6 @@
 PROJECT=github.com/LTitan/Mebius
-PROJECT_APIS=${PROJECT}/pkg/apis
+VERSION=v1alpha1
+PROJECT_APIS=${PROJECT}/pkg/apis/${VERSION}
 CLIENTSET=${PROJECT}/pkg/clients/clientset
 INFORMER=${PROJECT}/pkg/clients/informer
 LISTER=${PROJECT}/pkg/clients/lister
@@ -29,28 +30,28 @@ deepcopy-gen:
 	deepcopy-gen --input-dirs ${PROJECT_APIS} \
 		--output-package ${PROJECT_APIS} -h hack.txt \
 	--alsologtostderr
-	mv ${GOPATH_SRC}/${PROJECT_APIS}/deepcopy_generated.go pkg/apis
+	mv ${GOPATH_SRC}/${PROJECT_APIS}/deepcopy_generated.go pkg/apis/${VERSION}
 
 register-gen:
 	@echo ">> generating pkg/apis/zz_generated.register.go"
 	register-gen --input-dirs ${PROJECT_APIS} \
 		--output-package ${PROJECT_APIS} -h hack.txt \
 	--alsologtostderr
-	mv ${GOPATH_SRC}/${PROJECT_APIS}/zz_generated.register.go pkg/apis
+	mv ${GOPATH_SRC}/${PROJECT_APIS}/zz_generated.register.go pkg/apis/${VERSION}
 
 defaulter-gen:
 	@echo ">> generating pkg/apis/zz_generated.defaults.go"
 	defaulter-gen --input-dirs ${PROJECT_APIS} \
 		--output-package ${PROJECT_APIS} -h hack.txt \
 	--alsologtostderr
-	mv ${GOPATH_SRC}/${PROJECT_APIS}/zz_generated.defaults.go pkg/apis
+	mv ${GOPATH_SRC}/${PROJECT_APIS}/zz_generated.defaults.go pkg/apis/${VERSION}
 
 openapi-gen:
 	@echo ">> generating pkg/apis/openapi_generated.go"
 	openapi-gen --input-dirs ${PROJECT_APIS} \
 		--output-package ${PROJECT_APIS} -h hack.txt \
 	--alsologtostderr
-	mv ${GOPATH_SRC}/${PROJECT_APIS}/openapi_generated.go pkg/apis
+	mv ${GOPATH_SRC}/${PROJECT_APIS}/openapi_generated.go pkg/apis/${VERSION}
 
 client-gen:
 	@echo ">> generating pkg/clients/clientset..."
@@ -59,7 +60,7 @@ client-gen:
 		--clientset-name='mebius' \
 		--fake-clientset=false \
 		--input-base=${PROJECT} \
-		--input='pkg/apis' \
+		--input='pkg/apis/${VERSION}' \
 		--output-package ${CLIENTSET} -h hack.txt \
 	--alsologtostderr
 	mv ${GOPATH_SRC}/${CLIENTSET} pkg/clients
@@ -85,7 +86,7 @@ go-to-protobuf:
 	go-to-protobuf --output-base="${GOPATH}/src" --packages="${PROJECT_APIS}" -h hack.txt
 
 crd:
-	controller-gen crd:crdVersions=v1,allowDangerousTypes=true paths="./pkg/apis/..." output:crd:artifacts:config=crds
+	controller-gen crd:crdVersions=v1,allowDangerousTypes=true paths="./pkg/apis/${VERSION}..." output:crd:artifacts:config=crds
 
 goimports:
 	go install golang.org/x/tools/cmd/goimports@latest
