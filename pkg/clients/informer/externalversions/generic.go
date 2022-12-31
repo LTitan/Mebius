@@ -42,6 +42,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	// Group=mebius.io, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("clusters"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Mebius().V1alpha1().Clusters().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("machines"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Mebius().V1alpha1().Machines().Informer()}, nil
 
 	}
 

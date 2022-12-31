@@ -86,7 +86,7 @@ go-to-protobuf:
 	go-to-protobuf --output-base="${GOPATH}/src" --packages="${PROJECT_APIS}" -h hack.txt
 
 crd:
-	controller-gen crd:crdVersions=v1,allowDangerousTypes=true paths="./pkg/apis/${VERSION}..." output:crd:artifacts:config=crds
+	controller-gen crd:crdVersions=v1,allowDangerousTypes=true paths="./pkg/apis/..." output:crd:artifacts:config=crds
 
 goimports:
 	go install golang.org/x/tools/cmd/goimports@latest
@@ -96,3 +96,9 @@ fmt: ## Run go fmt against code.
 
 vet: ## Run go vet against code.
 	go vet ./...
+
+install:
+	kubectl apply -f crds
+
+uninstall:
+	kubectl delete -f crds

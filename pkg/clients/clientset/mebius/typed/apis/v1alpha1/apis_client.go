@@ -16,6 +16,7 @@ import (
 type MebiusV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	ClustersGetter
+	MachinesGetter
 }
 
 // MebiusV1alpha1Client is used to interact with features provided by the mebius.io group.
@@ -25,6 +26,10 @@ type MebiusV1alpha1Client struct {
 
 func (c *MebiusV1alpha1Client) Clusters(namespace string) ClusterInterface {
 	return newClusters(c, namespace)
+}
+
+func (c *MebiusV1alpha1Client) Machines(namespace string) MachineInterface {
+	return newMachines(c, namespace)
 }
 
 // NewForConfig creates a new MebiusV1alpha1Client for the given config.

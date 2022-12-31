@@ -6,3 +6,5 @@ this is the Mebius Project
 package v1alpha1
 
 type ClusterExpansion interface{}
+
+type MachineExpansion interface{}
