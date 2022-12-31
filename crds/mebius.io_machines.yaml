@@ -34,29 +34,8 @@ spec:
           metadata:
             type: object
           spec:
-            properties:
-              attributes:
-                additionalProperties:
-                  type: string
-                type: object
             type: object
           status:
-            properties:
-              condition:
-                items:
-                  properties:
-                    creat_time:
-                      format: date-time
-                      type: string
-                    status:
-                      type: string
-                    type:
-                      type: string
-                    update_time:
-                      format: date-time
-                      type: string
-                  type: object
-                type: array
             type: object
         type: object
     served: true

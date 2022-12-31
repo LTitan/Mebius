@@ -16,12 +16,9 @@ type Machine struct {
 }
 
 type MachineStatus struct {
-	Condition []ClusterCondition `json:"condition,omitempty" protobuf:"bytes,1,rep,name=condition"`
 }
 
 type MachineSpec struct {
-	// +optional
-	Attributes map[string]string `json:"attributes,omitempty" protobuf:"bytes,1,rep,name=attributes"`
 }
 
 // +kubebuilder:object:root=true
