@@ -72,6 +72,7 @@ func runController(cmd *cobra.Command, args []string) error {
 
 	go factory.Start(stopCh)
 
+	// TODO: The number of threads is currently hardcode and needs to be written to the configuration file
 	if err = machineController.Run(2, stopCh); err != nil {
 		klog.Fatalln("Error running controller:", err.Error())
 		return err

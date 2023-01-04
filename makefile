@@ -1,5 +1,5 @@
 PROJECT=github.com/LTitan/Mebius
-VERSION=v1alpha1
+VERSION?=v1alpha1
 PROJECT_APIS=${PROJECT}/pkg/apis/${VERSION}
 CLIENTSET=${PROJECT}/pkg/clients/clientset
 INFORMER=${PROJECT}/pkg/clients/informer
@@ -26,28 +26,28 @@ install-tools:
 	go install github.com/gogo/protobuf/protoc-gen-gogo@v1.3.2
 
 deepcopy-gen:
-	@echo ">> generating pkg/apis/deepcopy_generated.go"
+	@echo ">> generating pkg/apis/${VERSION}/deepcopy_generated.go"
 	deepcopy-gen --input-dirs ${PROJECT_APIS} \
 		--output-package ${PROJECT_APIS} -h hack.txt \
 	--alsologtostderr
 	mv ${GOPATH_SRC}/${PROJECT_APIS}/deepcopy_generated.go pkg/apis/${VERSION}
 
 register-gen:
-	@echo ">> generating pkg/apis/zz_generated.register.go"
+	@echo ">> generating pkg/apis/${VERSION}/zz_generated.register.go"
 	register-gen --input-dirs ${PROJECT_APIS} \
 		--output-package ${PROJECT_APIS} -h hack.txt \
 	--alsologtostderr
 	mv ${GOPATH_SRC}/${PROJECT_APIS}/zz_generated.register.go pkg/apis/${VERSION}
 
 defaulter-gen:
-	@echo ">> generating pkg/apis/zz_generated.defaults.go"
+	@echo ">> generating pkg/apis/${VERSION}/zz_generated.defaults.go"
 	defaulter-gen --input-dirs ${PROJECT_APIS} \
 		--output-package ${PROJECT_APIS} -h hack.txt \
 	--alsologtostderr
 	mv ${GOPATH_SRC}/${PROJECT_APIS}/zz_generated.defaults.go pkg/apis/${VERSION}
 
 openapi-gen:
-	@echo ">> generating pkg/apis/openapi_generated.go"
+	@echo ">> generating pkg/apis/${VERSION}/openapi_generated.go"
 	openapi-gen --input-dirs ${PROJECT_APIS} \
 		--output-package ${PROJECT_APIS} -h hack.txt \
 	--alsologtostderr
@@ -83,7 +83,12 @@ informer-gen:
 	mv ${GOPATH_SRC}/${INFORMER} pkg/clients
 
 go-to-protobuf:
-	go-to-protobuf --output-base="${GOPATH}/src" --packages="${PROJECT_APIS}" -h hack.txt
+	@echo ">> generating pkg/apis/${VERSION}/generated.proto"
+	go-to-protobuf --output-base="${GOPATH_SRC}" \
+	--packages="${PROJECT_APIS}" \
+	--proto-import "${GOPATH_SRC}/github.com/gogo/protobuf/protobuf" \
+	-h hack.txt
+	mv ${GOPATH_SRC}/${PROJECT_APIS}/generated.proto pkg/apis/${VERSION}
 
 crd:
 	controller-gen crd:crdVersions=v1,allowDangerousTypes=true paths="./pkg/apis/..." output:crd:artifacts:config=crds

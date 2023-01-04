@@ -5,24 +5,14 @@ this is the Mebius Project
 
 syntax = "proto2";
 
-package github.com.LTitan.Mebius.pkg.apis;
+package github.com.LTitan.Mebius.pkg.apis.v1alpha1;
 
-import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 import "k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto";
 import "k8s.io/apimachinery/pkg/runtime/generated.proto";
 import "k8s.io/apimachinery/pkg/runtime/schema/generated.proto";
 
 // Package-wide variables from generator "generated".
-option (gogoproto.marshaler_all) = true;
-option (gogoproto.stable_marshaler_all) = true;
-option (gogoproto.sizer_all) = true;
-option (gogoproto.goproto_stringer_all) = false;
-option (gogoproto.stringer_all) = true;
-option (gogoproto.unmarshaler_all) = true;
-option (gogoproto.goproto_unrecognized_all) = false;
-option (gogoproto.goproto_enum_prefix_all) = false;
-option (gogoproto.goproto_getters_all) = false;
-option go_package = "github.com/LTitan/Mebius/pkg/apis";
+option go_package = "github.com/LTitan/Mebius/pkg/apis/v1alpha1";
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:path=clusters
@@ -31,36 +21,65 @@ option go_package = "github.com/LTitan/Mebius/pkg/apis";
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 message Cluster {
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1 [(gogoproto.customname) = "ObjectMeta", (gogoproto.nullable) = false];
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
 
-  optional ClusterSpec spec = 2 [(gogoproto.customname) = "Spec", (gogoproto.nullable) = false];
+  optional ClusterSpec spec = 2;
 
-  optional ClusterStatus status = 3 [(gogoproto.customname) = "Status", (gogoproto.nullable) = false];
+  optional ClusterStatus status = 3;
 }
 
 message ClusterCondition {
-  optional string type = 1 [(gogoproto.customname) = "Type", (gogoproto.nullable) = false];
+  optional string type = 1;
 
-  optional string status = 2 [(gogoproto.casttype) = "ClusterConditionStatus", (gogoproto.customname) = "Status", (gogoproto.nullable) = false];
+  optional string status = 2;
 
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.Time creat_time = 3 [(gogoproto.customname) = "CreatTime"];
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.Time creat_time = 3;
 
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.Time update_time = 4 [(gogoproto.customname) = "UpdateTime"];
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.Time update_time = 4;
 }
 
 // +kubebuilder:object:root=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 message ClusterList {
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.ListMeta metadata = 1 [(gogoproto.customname) = "ListMeta", (gogoproto.nullable) = false];
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.ListMeta metadata = 1;
 
-  repeated Cluster items = 2 [(gogoproto.customname) = "Items", (gogoproto.nullable) = false];
+  repeated Cluster items = 2;
 }
 
 message ClusterSpec {
   // +optional
-  map<string, string> attributes = 1 [(gogoproto.customname) = "Attributes", (gogoproto.nullable) = false];
+  map<string, string> attributes = 1;
 }
 
 message ClusterStatus {
-  repeated ClusterCondition condition = 1 [(gogoproto.customname) = "Condition", (gogoproto.nullable) = false];
+  repeated ClusterCondition condition = 1;
 }
+
+// +kubebuilder:object:root=true
+// +kubebuilder:resource:path=machines
+// +kubebuilder:resource:shortName=machine
+// +kubebuilder:subresource:status
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+message Machine {
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
+
+  optional MachineSpec spec = 2;
+
+  optional MachineStatus status = 3;
+}
+
+// +kubebuilder:object:root=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+message MachineList {
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.ListMeta metadata = 1;
+
+  repeated Machine items = 2;
+}
+
+message MachineSpec {
+}
+
+message MachineStatus {
+}
+
