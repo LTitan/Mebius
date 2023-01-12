@@ -1,0 +1,5 @@
+apiVersion: mebius.io/v1alpha1
+kind: Machine
+metadata:
+  name: machine-demo
+  namespace: default
