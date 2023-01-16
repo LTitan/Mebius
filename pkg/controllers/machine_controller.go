@@ -6,6 +6,7 @@ import (
 
 	"github.com/LTitan/Mebius/pkg/apis/v1alpha1"
 	informers "github.com/LTitan/Mebius/pkg/clients/informer/externalversions/apis/v1alpha1"
+	mcontext "github.com/LTitan/Mebius/pkg/context"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -36,24 +37,24 @@ func NewMachineController(informer informers.MachineInformer) *MachineController
 	return machineController
 }
 
-func (c *MachineController) Run(thread int, stopCh <-chan struct{}) error {
+func (c *MachineController) Run(ctx mcontext.MContext, threadSize int) error {
 	defer runtime.HandleCrash()
 	defer c.workqueue.ShuttingDown()
 
 	klog.Infoln("Starting Machine control loop")
 
 	klog.Infoln("Waiting for informer caches to sync")
-	if ok := cache.WaitForCacheSync(stopCh, c.informer.Informer().HasSynced); !ok {
+	if ok := cache.WaitForCacheSync(ctx.Done(), c.informer.Informer().HasSynced); !ok {
 		return fmt.Errorf("failed to wati for caches to sync")
 	}
 
 	klog.Infoln("Starting workers")
-	for i := 0; i < thread; i++ {
-		go wait.Until(c.runWorker, time.Second, stopCh)
+	for i := 0; i < threadSize; i++ {
+		go wait.Until(c.runWorker, time.Second, ctx.Done())
 	}
 
 	klog.Infoln("Started workers")
-	<-stopCh
+	ctx.Done() // or ctx.WaitGoroutine()
 	klog.Infoln("Shutting down workers")
 	return nil
 }
