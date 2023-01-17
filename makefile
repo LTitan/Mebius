@@ -14,7 +14,7 @@ GOPATH_SRC=${GOPATH}/src
 
 all: register-gen deepcopy-gen defaulter-gen openapi-gen client-gen lister-gen informer-gen
 
-install-tools: goimports
+install-tools: goimports install-grpc-env
 	go install k8s.io/code-generator/cmd/go-to-protobuf@v0.25.3
 	go install k8s.io/code-generator/cmd/client-gen@v0.25.3
 	go install k8s.io/code-generator/cmd/informer-gen@v0.25.3
@@ -32,6 +32,14 @@ install-tools: goimports
 	go install -mod=readonly github.com/gogo/protobuf/protoc-gen-gogo@latest
 	go install -mod=readonly github.com/mwitkow/go-proto-validators/protoc-gen-govalidators@latest
 	go install -mod=readonly github.com/rakyll/statik@latest
+
+install-grpc-env:
+	mkdir -p tmp \
+	&& wget https://github.com/protocolbuffers/protobuf/releases/download/v3.19.5/protoc-3.19.5-linux-x86_64.zip -O tmp/protoc.zip \
+	&& unzip -u -d tmp tmp/protoc.zip \
+	&& rsync -a tmp/bin/* /usr/local/bin \
+	&& rsync -a tmp/include/* /usr/local/include/ \
+	&& rm -rf tmp
 
 deepcopy-gen:
 	@echo ">> generating pkg/apis/${VERSION}/deepcopy_generated.go"
@@ -114,6 +122,7 @@ grpc: go-to-protobuf
 	-I ${GOPATH_SRC} \
 	-I ./vendor \
 	-I ${GOPATH_SRC}/github.com/gogo/googleapis \
+	-I /usr/local/include \
 	--gogo_out=plugins=grpc,paths=source_relative:./ \
 	--grpc-gateway_out=logtostderr=true,v=10,allow_patch_feature=true,paths=source_relative:./ \
 	--swagger_out=logtostderr=true,v=10:./ \
