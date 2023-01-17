@@ -1,6 +1,7 @@
 PROJECT=github.com/LTitan/Mebius
 VERSION?=v1alpha1
 PROJECT_APIS=${PROJECT}/pkg/apis/${VERSION}
+PROTO_TYPES=${PROJECT}/pkg/protos/types
 CLIENTSET=${PROJECT}/pkg/clients/clientset
 INFORMER=${PROJECT}/pkg/clients/informer
 LISTER=${PROJECT}/pkg/clients/lister
@@ -13,7 +14,7 @@ GOPATH_SRC=${GOPATH}/src
 
 all: register-gen deepcopy-gen defaulter-gen openapi-gen client-gen lister-gen informer-gen
 
-install-tools:
+install-tools: goimports
 	go install k8s.io/code-generator/cmd/go-to-protobuf@v0.25.3
 	go install k8s.io/code-generator/cmd/client-gen@v0.25.3
 	go install k8s.io/code-generator/cmd/informer-gen@v0.25.3
@@ -23,7 +24,14 @@ install-tools:
 	go install k8s.io/code-generator/cmd/openapi-gen@v0.25.3
 	go install k8s.io/code-generator/cmd/defaulter-gen@v0.25.3
 	go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.10.0
-	go install github.com/gogo/protobuf/protoc-gen-gogo@v1.3.2
+	go install -mod=readonly github.com/gogo/protobuf/protoc-gen-gogo@v1.3.2
+	go install -mod=readonly github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway@latest
+	go install -mod=readonly github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger@latest
+	go install -mod=readonly google.golang.org/protobuf/cmd/protoc-gen-go@latest
+	go install -mod=readonly google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+	go install -mod=readonly github.com/gogo/protobuf/protoc-gen-gogo@latest
+	go install -mod=readonly github.com/mwitkow/go-proto-validators/protoc-gen-govalidators@latest
+	go install -mod=readonly github.com/rakyll/statik@latest
 
 deepcopy-gen:
 	@echo ">> generating pkg/apis/${VERSION}/deepcopy_generated.go"
@@ -82,13 +90,17 @@ informer-gen:
 	--alsologtostderr
 	mv ${GOPATH_SRC}/${INFORMER} pkg/clients
 
-go-to-protobuf:
+go-to-protobuf: vendor
 	@echo ">> generating pkg/apis/${VERSION}/generated.proto"
 	go-to-protobuf --output-base="${GOPATH_SRC}" \
-	--packages="${PROJECT_APIS}" \
-	--proto-import "${GOPATH_SRC}/github.com/gogo/protobuf/protobuf" \
+	--apimachinery-packages="-k8s.io/apimachinery/pkg/util/intstr,-k8s.io/apimachinery/pkg/api/resource,-k8s.io/apimachinery/pkg/runtime/schema,-k8s.io/apimachinery/pkg/runtime,-k8s.io/apimachinery/pkg/apis/meta/v1" \
+	--packages="${PROJECT_APIS},${PROTO_TYPES}" \
+	--proto-import "vendor,${GOPATH_SRC}/github.com/gogo/protobuf/protobuf" \
 	-h hack.txt
-	mv ${GOPATH_SRC}/${PROJECT_APIS}/generated.proto pkg/apis/${VERSION}
+	test -f  pkg/apis/${VERSION}/generated.proto \
+	|| mv ${GOPATH_SRC}/${PROJECT_APIS}/generated.proto pkg/apis/${VERSION}
+	@echo ">> generating pkg/protos/types/generated.proto"
+
 
 crd:
 	controller-gen crd:crdVersions=v1,allowDangerousTypes=true paths="./pkg/apis/..." output:crd:artifacts:config=crds
@@ -96,20 +108,39 @@ crd:
 goimports:
 	go install golang.org/x/tools/cmd/goimports@latest
 
+grpc: go-to-protobuf
+	protoc \
+	-I . \
+	-I ${GOPATH_SRC} \
+	-I ./vendor \
+	-I ${GOPATH_SRC}/github.com/gogo/googleapis \
+	--gogo_out=plugins=grpc,paths=source_relative:./ \
+	--grpc-gateway_out=logtostderr=true,v=10,allow_patch_feature=true,paths=source_relative:./ \
+	--swagger_out=logtostderr=true,v=10:./ \
+	--govalidators_out=gogoimport=true,paths=source_relative,:./ \
+	pkg/protos/*.proto
+
 fmt: ## Run go fmt against code.
 	go fmt ./...
+	${GOPATH}/bin/goimports -l $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 
 vet: ## Run go vet against code.
 	go vet ./...
 
-build: fmt vet ## Build manager binary.
+build: clean fmt vet ## Build manager binary.
 	go build -o bin/mebius main.go
 
 run: fmt vet ## Run code from your host.
 	go run ./main.go
+
+vendor:
+	go mod vendor
 
 install:
 	kubectl apply -f crds
 
 uninstall:
 	kubectl delete -f crds
+
+clean:
+	rm -rf vendor

@@ -1,1 +1,27 @@
-syntax = "proto2";
+syntax = "proto3";
+package proto;
+
+option go_package = "github.com/LTitan/Mebius/pkg/protos;protos";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/LTitan/Mebius/pkg/apis/v1alpha1/generated.proto";
+import "github.com/gogo/googleapis/google/api/annotations.proto";
+
+// Enable custom Marshal method.
+option (gogoproto.marshaler_all) = true;
+// Enable custom Unmarshal method.
+option (gogoproto.unmarshaler_all) = true;
+// Enable custom Size method (Required by Marshal and Unmarshal).
+option (gogoproto.sizer_all) = true;
+// Enable registration with golang/protobuf for the grpc-gateway.
+option (gogoproto.goproto_registration) = true;
+// Enable generation of XXX_MessageName methods for grpc-go/status.
+option (gogoproto.messagename_all) = true;
+
+service Server {
+  rpc GetMachine(github.com.LTitan.Mebius.pkg.apis.v1alpha1.Machine)
+      returns (github.com.LTitan.Mebius.pkg.apis.v1alpha1.Machine) {
+    option (google.api.http) = {
+      get : "/api/v1alpha1/machine"
+    };
+  }
+}
