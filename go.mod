@@ -10,7 +10,13 @@ require (
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1
 )
 
-require github.com/pmezard/go-difflib v1.0.0 // indirect
+require (
+	github.com/gogo/googleapis v1.4.1 // indirect
+	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	google.golang.org/genproto v0.0.0-20201019141844-1ed22bb0c154 // indirect
+	google.golang.org/grpc v1.33.1 // indirect
+)
 
 require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
