@@ -1,11 +1,8 @@
 package options
 
 import (
-	"time"
+	"fmt"
 
-	mebiusclientset "github.com/LTitan/Mebius/pkg/clients/clientset/mebius"
-	"github.com/LTitan/Mebius/pkg/clients/informer/externalversions"
-	"github.com/LTitan/Mebius/pkg/controllers"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
@@ -14,33 +11,58 @@ import (
 type GlobalOption struct {
 	EnableKubeConfig bool
 	KubeConfig       string
+	ThreadSize       int
 
-	Cmd *cobra.Command
+	cmd *cobra.Command
+
+	copt controllerOptions
 }
 
 func (g *GlobalOption) Parse() {
-	g.Cmd.PersistentFlags().BoolVar(&g.EnableKubeConfig, "enable-kubeconfig", true, "is enable kube-config")
-	g.Cmd.PersistentFlags().StringVar(&g.KubeConfig, "kubeconfig", clientcmd.RecommendedHomeFile, "kube-config file")
+	g.cmd.PersistentFlags().BoolVar(&g.EnableKubeConfig, "enable-kubeconfig", true, "is enable kube-config")
+	g.cmd.PersistentFlags().StringVar(&g.KubeConfig, "kubeconfig", clientcmd.RecommendedHomeFile, "kube-config file")
+	g.cmd.PersistentFlags().IntVar(&g.ThreadSize, "thread-size", 10, "size of controller thread")
+
+	g.cmd.PersistentFlags().StringVar(&g.copt.Name, "controller-name", "unknown", "start controller name")
+	g.cmd.PersistentFlags().IntVar(&g.copt.ResyncPeriod, "resync", 24, "informer resync period hour")
 }
 
 func (g *GlobalOption) ExecuteOrDie() {
-	if err := g.Cmd.Execute(); err != nil {
-		panic(err)
+	// validate && running
+	if err := g.Validate(); err != nil {
+		klog.Fatalln(err)
+	}
+
+	if err := g.cmd.Execute(); err != nil {
+		klog.Fatalln(err)
 	}
 }
 
 func (g *GlobalOption) Validate() error {
+	if g.EnableKubeConfig && g.KubeConfig == "" {
+		return fmt.Errorf("kubeconfig path must be set when enbale kubeconfig")
+	}
+	if err := g.copt.Validate(); err != nil {
+		return nil
+	}
 	return nil
+}
+
+func (g *GlobalOption) GetCommand() *cobra.Command {
+	return g.cmd
+}
+
+func (g *GlobalOption) RegisteredRunE(run func(opt *GlobalOption) func(cmd *cobra.Command, args []string) error) {
+	g.cmd.RunE = run(g)
 }
 
 func NewRootCommand() *GlobalOption {
 	g := &GlobalOption{
-		Cmd: &cobra.Command{
+		cmd: &cobra.Command{
 			Use:   "mebius",
 			Short: "mebius project executor",
 			Long:  "mebius is a Kubernetes Operator practices, using mebius [COMMAND] [FLAGS] to start it",
 			// TODO: We may need a subcommand to execute it
-			RunE: runController,
 		},
 	}
 	klog.InitFlags(nil)
@@ -48,35 +70,16 @@ func NewRootCommand() *GlobalOption {
 	return g
 }
 
-func runController(cmd *cobra.Command, args []string) error {
-	// TODO: Deal with enable-kubeconfig
-	kubeconfig := cmd.PersistentFlags().Lookup("kubeconfig").Value.String()
-	// set up signals so we handle the first shutdown signal gracefully
-	stopCh := setupSignalHandler()
+func (g *GlobalOption) Controller() *controllerOptions {
+	return &g.copt
+}
 
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-	if err != nil {
-		klog.Fatalln(err)
-		return err
-	}
+// controller options
+type controllerOptions struct {
+	Name         string
+	ResyncPeriod int
+}
 
-	clientset, err := mebiusclientset.NewForConfig(config)
-	if err != nil {
-		klog.Fatalln(err)
-		return err
-	}
-
-	factory := externalversions.NewSharedInformerFactory(clientset, time.Second*30)
-
-	machineController := controllers.NewMachineController(factory.Mebius().V1alpha1().Machines())
-
-	go factory.Start(stopCh)
-
-	// TODO: The number of threads is currently hardcode and needs to be written to the configuration file
-	if err = machineController.Run(2, stopCh); err != nil {
-		klog.Fatalln("Error running controller:", err.Error())
-		return err
-	}
-
+func (c *controllerOptions) Validate() error {
 	return nil
 }
