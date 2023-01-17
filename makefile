@@ -142,6 +142,9 @@ build: clean fmt vet ## Build manager binary.
 run: fmt vet ## Run code from your host.
 	go run ./main.go
 
+test:
+	go test ./... -coverprofile cover.out
+
 vendor:
 	go mod vendor
 
