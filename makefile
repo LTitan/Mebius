@@ -129,17 +129,17 @@ grpc: go-to-protobuf
 	--govalidators_out=gogoimport=true,paths=source_relative,:./ \
 	pkg/protos/*.proto
 
-fmt: ## Run go fmt against code.
+fmt: goimports
 	go fmt ./...
 	${GOPATH}/bin/goimports -l $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 
-vet: ## Run go vet against code.
+vet: 
 	go vet ./...
 
-build: clean fmt vet ## Build manager binary.
+build: clean fmt vet
 	go build -o bin/mebius main.go
 
-run: fmt vet ## Run code from your host.
+run: fmt vet
 	go run ./main.go
 
 test:
