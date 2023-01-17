@@ -1,6 +1,8 @@
 package options
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
@@ -12,21 +14,37 @@ type GlobalOption struct {
 	ThreadSize       int
 
 	cmd *cobra.Command
+
+	copt controllerOptions
 }
 
 func (g *GlobalOption) Parse() {
 	g.cmd.PersistentFlags().BoolVar(&g.EnableKubeConfig, "enable-kubeconfig", true, "is enable kube-config")
 	g.cmd.PersistentFlags().StringVar(&g.KubeConfig, "kubeconfig", clientcmd.RecommendedHomeFile, "kube-config file")
 	g.cmd.PersistentFlags().IntVar(&g.ThreadSize, "thread-size", 10, "size of controller thread")
+
+	g.cmd.PersistentFlags().StringVar(&g.copt.Name, "controller-name", "unknown", "start controller name")
+	g.cmd.PersistentFlags().IntVar(&g.copt.ResyncPeriod, "resync", 24, "informer resync period hour")
 }
 
 func (g *GlobalOption) ExecuteOrDie() {
+	// validate && running
+	if err := g.Validate(); err != nil {
+		klog.Fatalln(err)
+	}
+
 	if err := g.cmd.Execute(); err != nil {
-		panic(err)
+		klog.Fatalln(err)
 	}
 }
 
 func (g *GlobalOption) Validate() error {
+	if g.EnableKubeConfig && g.KubeConfig == "" {
+		return fmt.Errorf("kubeconfig path must be set when enbale kubeconfig")
+	}
+	if err := g.copt.Validate(); err != nil {
+		return nil
+	}
 	return nil
 }
 
@@ -50,4 +68,18 @@ func NewRootCommand() *GlobalOption {
 	klog.InitFlags(nil)
 	g.Parse()
 	return g
+}
+
+func (g *GlobalOption) Controller() *controllerOptions {
+	return &g.copt
+}
+
+// controller options
+type controllerOptions struct {
+	Name         string
+	ResyncPeriod int
+}
+
+func (c *controllerOptions) Validate() error {
+	return nil
 }

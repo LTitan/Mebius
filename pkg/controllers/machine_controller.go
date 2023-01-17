@@ -15,12 +15,16 @@ import (
 	"k8s.io/klog/v2"
 )
 
+const (
+	machineControllerName = "machine-controller"
+)
+
 type MachineController struct {
 	informer  informers.MachineInformer
 	workqueue workqueue.RateLimitingInterface
 }
 
-func NewMachineController(informer informers.MachineInformer) *MachineController {
+func NewMachineController(informer informers.MachineInformer) Interface {
 	machineController := &MachineController{
 		informer:  informer,
 		workqueue: workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "machine"),
@@ -54,7 +58,7 @@ func (c *MachineController) Run(ctx mcontext.MContext, threadSize int) error {
 	}
 
 	klog.Infoln("Started workers")
-	ctx.Done() // or ctx.WaitGoroutine()
+	ctx.WaitGoroutine()
 	klog.Infoln("Shutting down workers")
 	return nil
 }

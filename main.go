@@ -7,6 +7,7 @@ import (
 
 func main() {
 	root := options.NewRootCommand()
-	controllers.RegisterFramework(root)
+	framework := controllers.NewFramework(root)
+	framework.RegisterCommand()
 	root.ExecuteOrDie()
 }
