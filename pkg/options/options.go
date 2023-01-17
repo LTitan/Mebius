@@ -15,7 +15,8 @@ type GlobalOption struct {
 
 	cmd *cobra.Command
 
-	copt controllerOptions
+	copt   controllerOptions
+	server serverOptions
 }
 
 func (g *GlobalOption) Parse() {
@@ -25,6 +26,7 @@ func (g *GlobalOption) Parse() {
 
 	g.cmd.PersistentFlags().StringVar(&g.copt.Name, "controller-name", "unknown", "start controller name")
 	g.cmd.PersistentFlags().IntVar(&g.copt.ResyncPeriod, "resync", 24, "informer resync period hour")
+	g.cmd.PersistentFlags().IntVar(&g.server.Port, "port", 8000, "grpc listen port")
 }
 
 func (g *GlobalOption) ExecuteOrDie() {
@@ -74,6 +76,10 @@ func (g *GlobalOption) Controller() *controllerOptions {
 	return &g.copt
 }
 
+func (g *GlobalOption) Sever() *serverOptions {
+	return &g.server
+}
+
 // controller options
 type controllerOptions struct {
 	Name         string
@@ -81,5 +87,13 @@ type controllerOptions struct {
 }
 
 func (c *controllerOptions) Validate() error {
+	return nil
+}
+
+type serverOptions struct {
+	Port int
+}
+
+func (c *serverOptions) Validate() error {
 	return nil
 }
