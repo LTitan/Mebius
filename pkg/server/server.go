@@ -7,6 +7,7 @@ import (
 
 	"github.com/LTitan/Mebius/pkg/apis/v1alpha1"
 	mcontext "github.com/LTitan/Mebius/pkg/context"
+	"github.com/LTitan/Mebius/pkg/factory"
 	"github.com/LTitan/Mebius/pkg/options"
 	"github.com/LTitan/Mebius/pkg/protos"
 	"github.com/spf13/cobra"
@@ -14,15 +15,11 @@ import (
 	"k8s.io/klog/v2"
 )
 
-type ServerInterface interface {
-	RegisterCommand()
-}
-
 type RawServer struct {
 	opts *options.GlobalOption
 }
 
-func NewServer(opts *options.GlobalOption) ServerInterface {
+func NewServer(opts *options.GlobalOption) factory.Application {
 	return &RawServer{
 		opts: opts,
 	}
@@ -48,7 +45,10 @@ func (rs *RawServer) Run() error {
 	// TODO: Add some grpc middleware
 	ctx, cancel := mcontext.WithWaitGroup(context.Background()).WithCancel()
 	defer cancel()
-	server := grpc.NewServer(grpc.MaxMsgSize(1024 * 1024 * 5))
+	server := grpc.NewServer(
+		grpc.MaxRecvMsgSize(rs.opts.MaxRecvByteSize),
+		grpc.MaxSendMsgSize(rs.opts.MaxSendByteSize),
+	)
 	protos.RegisterServerServer(server, rs)
 	listen, err := net.Listen("tcp", fmt.Sprintf(":%d", rs.opts.Sever().Port))
 	if err != nil {

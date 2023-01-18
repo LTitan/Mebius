@@ -1,5 +1,6 @@
 package conf
 
+// TBD ...
 const (
 	defaultMaxRecvAndSendByteSize = 1024 * 1024 * 1024 * 2
 )
@@ -8,14 +9,14 @@ const (
 type ServerConf struct {
 	MaxRecvByteSize int
 	MaxSendByteSize int
-	Port            uint8
+	Port            int
 }
 
 // GatewayConf config of Gateway
 type GatewayConf struct {
 	MaxRecvByteSize int
 	MaxSendByteSize int
-	Port            uint8
+	Port            int
 	ServerMeta
 }
 
