@@ -9,6 +9,7 @@ import (
 	mebiusclientset "github.com/LTitan/Mebius/pkg/clients/clientset/mebius"
 	"github.com/LTitan/Mebius/pkg/clients/informer/externalversions"
 	mcontext "github.com/LTitan/Mebius/pkg/context"
+	"github.com/LTitan/Mebius/pkg/factory"
 	"github.com/LTitan/Mebius/pkg/options"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/rest"
@@ -29,7 +30,7 @@ type Framework struct {
 	controllerSet map[string]Interface
 }
 
-func NewFramework(opts *options.GlobalOption) *Framework {
+func NewFramework(opts *options.GlobalOption) factory.Application {
 	f := &Framework{
 		opts: opts,
 	}
