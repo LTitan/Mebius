@@ -28,3 +28,31 @@ jobs:
           with:
             version: ${{ env.GOLANGCI_VERSION }}
             args: --disable-all -E errcheck -E gofmt -E govet -E goimports -E ineffassign -E misspell --timeout=15m
+  unit-test:
+      runs-on: ubuntu-22.04
+      steps:
+        - uses: actions/checkout@v3
+          with:
+            submodules: true
+        - name: Fetch History
+          run: git fetch --prune --unshallow
+        - name: Setup Go
+          uses: actions/setup-go@v3
+          with:
+            go-version: ${{ env.GO_VERSION }}
+        - name: Cache Go Dependencies
+          uses: actions/cache@v3
+          with:
+            path: ~/go/pkg/mod
+            key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+            restore-keys: ${{ runner.os }}-go-
+        - name: Run test
+          run: make test
+        - name: Upload test coverage
+          uses: codecov/codecov-action@v3
+          with:
+            token: ${{ secrets.CODECOV_TOKEN }}
+            files: cover.out
+            verbose: true
+        - name: Build All Binaries
+          run: make build

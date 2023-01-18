@@ -55,7 +55,9 @@ func (rs *RawServer) Run() error {
 		return err
 	}
 	klog.Infof("start grpc server, listen on *:%d", rs.opts.Sever().Port)
-	server.Serve(listen)
+	if err := server.Serve(listen); err != nil {
+		return err
+	}
 	<-ctx.Done()
 	server.Stop()
 	return nil
