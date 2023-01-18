@@ -53,15 +53,18 @@ func (g *gateway) Run() error {
 	)
 	dialOption := []grpc.DialOption{grpc.WithInsecure()}
 	protos.RegisterServerHandlerFromEndpoint(ctx, mux, g.opts.Gateway().Endpoints, dialOption)
+	addr := fmt.Sprintf(":%d", g.opts.Gateway().Port)
+	klog.Infof("start grpc server, listen on %s", addr)
 	server := gin.New()
-	server.Use(middleware.CORSMiddleware()) //add more
-	server.Group("/api/*{v1alpha1}").Any("", gin.WrapH(mux))
+	server.Use(middleware.CORSMiddleware(), middleware.Logger()) //add more
+	server.Group("/api/*{v1}").Any("", gin.WrapH(mux))
 
 	server.GET("/apiv1/test", func(ctx *gin.Context) {
 		ctx.String(200, "OK")
 	})
-	addr := fmt.Sprintf(":%d", g.opts.Gateway().Port)
-	klog.Infof("start grpc server, listen on %s", addr)
+	if err := middleware.SwaggerDoc(server); err != nil {
+		return err
+	}
 	if err := server.Run(addr); err != nil {
 		return err
 	}

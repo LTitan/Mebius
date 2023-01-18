@@ -136,7 +136,11 @@ fmt: goimports
 vet: 
 	go vet ./...
 
-build: clean fmt vet
+doc:
+	cp pkg/protos/*.json docs/static
+	statik -m -f -src docs/static
+
+build: clean doc fmt vet
 	go build -o bin/mebius main.go
 
 run: fmt vet

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/LTitan/Mebius/pkg/apis/v1alpha1"
 	mcontext "github.com/LTitan/Mebius/pkg/context"
 	"github.com/LTitan/Mebius/pkg/factory"
 	"github.com/LTitan/Mebius/pkg/options"
 	"github.com/LTitan/Mebius/pkg/protos"
+	"github.com/LTitan/Mebius/pkg/protos/types"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"k8s.io/klog/v2"
@@ -25,8 +25,11 @@ func NewServer(opts *options.GlobalOption) factory.Application {
 	}
 }
 
-func (rs *RawServer) GetMachine(ctx context.Context, req *v1alpha1.Machine) (resp *v1alpha1.Machine, err error) {
-	return req, nil
+func (rs *RawServer) GetMachine(ctx context.Context, req *types.ExampleRequest) (resp *types.ExampleResponse, err error) {
+	resp = &types.ExampleResponse{
+		Content: "this is a grpc server",
+	}
+	return
 }
 
 func (rs *RawServer) RegisterCommand() {

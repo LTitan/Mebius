@@ -5,7 +5,7 @@ package protos
 
 import (
 	fmt "fmt"
-	_ "github.com/LTitan/Mebius/pkg/apis/v1alpha1"
+	_ "github.com/LTitan/Mebius/pkg/protos/types"
 	_ "github.com/gogo/googleapis/google/api"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
