@@ -13,7 +13,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/LTitan/Mebius/pkg/apis/v1alpha1"
+	"github.com/LTitan/Mebius/pkg/protos/types"
 	"github.com/golang/protobuf/descriptor"
 	"github.com/golang/protobuf/proto"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -39,7 +39,7 @@ var (
 )
 
 func request_Server_GetMachine_0(ctx context.Context, marshaler runtime.Marshaler, client ServerClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq v1alpha1.Machine
+	var protoReq types.ExampleRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
@@ -55,7 +55,7 @@ func request_Server_GetMachine_0(ctx context.Context, marshaler runtime.Marshale
 }
 
 func local_request_Server_GetMachine_0(ctx context.Context, marshaler runtime.Marshaler, server ServerServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq v1alpha1.Machine
+	var protoReq types.ExampleRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {

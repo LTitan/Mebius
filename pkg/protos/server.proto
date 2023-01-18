@@ -1,9 +1,9 @@
 syntax = "proto3";
-package proto;
+package github.com.LTitan.Mebius.pkg.protos;
 
 option go_package = "github.com/LTitan/Mebius/pkg/protos;protos";
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
-import "github.com/LTitan/Mebius/pkg/apis/v1alpha1/generated.proto";
+import "github.com/LTitan/Mebius/pkg/protos/types/generated.proto";
 import "github.com/gogo/googleapis/google/api/annotations.proto";
 
 // Enable custom Marshal method.
@@ -18,8 +18,8 @@ option (gogoproto.goproto_registration) = true;
 option (gogoproto.messagename_all) = true;
 
 service Server {
-  rpc GetMachine(github.com.LTitan.Mebius.pkg.apis.v1alpha1.Machine)
-      returns (github.com.LTitan.Mebius.pkg.apis.v1alpha1.Machine) {
+  rpc GetMachine(github.com.LTitan.Mebius.pkg.protos.types.ExampleRequest)
+      returns (github.com.LTitan.Mebius.pkg.protos.types.ExampleResponse) {
     option (google.api.http) = {
       get : "/api/v1alpha1/machine"
     };
