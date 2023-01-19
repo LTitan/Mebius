@@ -3,6 +3,7 @@ package options
 import (
 	"fmt"
 
+	"github.com/LTitan/Mebius/pkg/utils/function"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
@@ -44,12 +45,13 @@ func (g *GlobalOption) Parse() {
 
 func (g *GlobalOption) ExecuteOrDie() {
 	defer klog.Flush()
-	// validate && running
-	if err := g.Validate(); err != nil {
-		klog.Fatalln(err)
-	}
-
-	if err := g.cmd.Execute(); err != nil {
+	if err := function.NewFunctionLinkErr(
+		g.Validate,
+		g.server.Validate,
+		g.gateway.Validate,
+		g.copt.Validate,
+		g.cmd.Execute,
+	).DoErr(); err != nil {
 		klog.Fatalln(err)
 	}
 }
@@ -57,9 +59,6 @@ func (g *GlobalOption) ExecuteOrDie() {
 func (g *GlobalOption) Validate() error {
 	if g.EnableKubeConfig && g.KubeConfig == "" {
 		return fmt.Errorf("kubeconfig path must be set when enbale kubeconfig")
-	}
-	if err := g.copt.Validate(); err != nil {
-		return nil
 	}
 	return nil
 }

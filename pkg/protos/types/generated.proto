@@ -7,6 +7,8 @@ syntax = "proto2";
 
 package github.com.LTitan.Mebius.pkg.protos.types;
 
+import "github.com/LTitan/Mebius/pkg/apis/v1alpha1/generated.proto";
+
 // Package-wide variables from generator "generated".
 option go_package = "github.com/LTitan/Mebius/pkg/protos/types";
 
@@ -16,5 +18,19 @@ message ExampleRequest {
 
 message ExampleResponse {
   optional string content = 1;
+}
+
+message HeartbeatRequest {
+  optional string name = 1;
+
+  optional string uuid = 2;
+}
+
+message HeartbeatResponse {
+  optional int32 code = 1;
+
+  optional string message = 2;
+
+  repeated github.com.LTitan.Mebius.pkg.apis.v1alpha1.Machine data = 3;
 }
 
