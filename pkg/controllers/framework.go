@@ -4,16 +4,12 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
-	mebiusclientset "github.com/LTitan/Mebius/pkg/clients/clientset/mebius"
-	"github.com/LTitan/Mebius/pkg/clients/informer/externalversions"
 	mcontext "github.com/LTitan/Mebius/pkg/context"
 	"github.com/LTitan/Mebius/pkg/factory"
 	"github.com/LTitan/Mebius/pkg/options"
+	"github.com/LTitan/Mebius/pkg/utils/function"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 // Interface .
@@ -22,17 +18,15 @@ type Interface interface {
 }
 
 type Framework struct {
-	kubeConfig                  *rest.Config
-	mebiusSharedInformerFactory externalversions.SharedInformerFactory
-	mebiusClientSet             mebiusclientset.Interface
-
+	factory.FrameworkInterface
 	opts          *options.GlobalOption
 	controllerSet map[string]Interface
 }
 
 func NewFramework(opts *options.GlobalOption) factory.Application {
 	f := &Framework{
-		opts: opts,
+		opts:               opts,
+		FrameworkInterface: factory.NewBaseFramework(opts),
 	}
 	return f
 }
@@ -49,45 +43,22 @@ func (f *Framework) RegisterCommand() {
 	f.opts.GetCommand().AddCommand(cmd)
 }
 
-func (f *Framework) buildKubeConfig() (err error) {
-	f.kubeConfig, err = clientcmd.BuildConfigFromFlags("", f.opts.KubeConfig)
-	return
-}
-
-func (f *Framework) buildClientSet() (err error) {
-	f.mebiusClientSet, err = mebiusclientset.NewForConfig(f.kubeConfig)
-	return
-}
-
-func (f *Framework) buildInformer() (err error) {
-	f.mebiusSharedInformerFactory = externalversions.NewSharedInformerFactory(f.mebiusClientSet,
-		time.Hour*time.Duration(f.opts.Controller().ResyncPeriod))
-	return
-}
-
 func (f *Framework) buildControllerFactory() (err error) {
 	// machine controller
+	// 新增controller在这里注册
 	f.controllerSet = map[string]Interface{
-		machineControllerName: NewMachineController(f.mebiusSharedInformerFactory.Mebius().
+		machineControllerName: NewMachineController(f.GetMebiusSharedInformerFactory().Mebius().
 			V1alpha1().Machines()),
 	}
 	return nil
 }
 
 func (f *Framework) init() error {
-	type initFunc func() error
-	funcs := []initFunc{
-		f.buildKubeConfig,
-		f.buildClientSet,
-		f.buildInformer,
+	fle := function.NewFunctionLinkErr(
+		f.FrameworkInterface.Init,
 		f.buildControllerFactory,
-	}
-	for _, realRun := range funcs {
-		if err := realRun(); err != nil {
-			return err
-		}
-	}
-	return nil
+	)
+	return fle.DoErr()
 }
 
 func (f *Framework) getRegisteredControllerName() []string {
@@ -110,7 +81,7 @@ func (f *Framework) Run() (err error) {
 	ctx, cancel := mcontext.WithWaitGroup(context.Background()).WithCancel()
 	ctx.GO(func() { <-stopCh; cancel() })
 	ctx.GO(func() {
-		f.mebiusSharedInformerFactory.Start(ctx.Done())
+		f.GetMebiusSharedInformerFactory().Start(ctx.Done())
 	})
 	return f.controllerSet[f.opts.Controller().Name].Run(ctx, f.opts.ThreadSize)
 }

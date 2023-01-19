@@ -10,6 +10,7 @@ import (
 	"github.com/LTitan/Mebius/pkg/gateway/middleware"
 	"github.com/LTitan/Mebius/pkg/options"
 	"github.com/LTitan/Mebius/pkg/protos"
+	"github.com/LTitan/Mebius/pkg/utils/function"
 	"github.com/gin-gonic/gin"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
@@ -54,20 +55,19 @@ func (g *gateway) Run() error {
 	dialOption := []grpc.DialOption{grpc.WithInsecure()}
 	protos.RegisterServerHandlerFromEndpoint(ctx, mux, g.opts.Gateway().Endpoints, dialOption)
 	addr := fmt.Sprintf(":%d", g.opts.Gateway().Port)
-	klog.Infof("start grpc server, listen on %s", addr)
+
 	server := gin.New()
 	server.Use(middleware.CORSMiddleware(), middleware.Logger()) //add more
 	server.Group("/api/*{v1}").Any("", gin.WrapH(mux))
-
 	server.GET("/apiv1/test", func(ctx *gin.Context) {
 		ctx.String(200, "OK")
 	})
-	if err := middleware.SwaggerDoc(server); err != nil {
-		return err
-	}
-	if err := server.Run(addr); err != nil {
-		return err
-	}
-	<-ctx.Done()
-	return nil
+	klog.Infof("start grpc server, listen on %s", addr)
+	return function.NewFunctionLinkErr(
+		func() error {
+			return middleware.SwaggerDoc(server)
+		},
+		func() error {
+			return server.Run(addr)
+		}).DoErr()
 }

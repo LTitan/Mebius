@@ -24,4 +24,12 @@ service Server {
       get : "/api/v1alpha1/machine"
     };
   }
+
+  rpc Heartbeat(github.com.LTitan.Mebius.pkg.protos.types.HeartbeatRequest)
+      returns (github.com.LTitan.Mebius.pkg.protos.types.HeartbeatResponse) {
+    option (google.api.http) = {
+      post : "/api/v1alpha1/heartbeat"
+      body: "*"
+    };
+  }
 }
