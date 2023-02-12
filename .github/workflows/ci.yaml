@@ -54,5 +54,7 @@ jobs:
             token: ${{ secrets.CODECOV_TOKEN }}
             files: cover.out
             verbose: true
+        - name: Setup statik
+          run: go install github.com/rakyll/statik@latest
         - name: Build All Binaries
           run: make build
