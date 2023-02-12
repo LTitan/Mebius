@@ -100,13 +100,14 @@ informer-gen:
 
 go-to-protobuf: vendor
 	@echo ">> generating pkg/apis/${VERSION}/generated.proto"
+	rm -f pkg/apis/${VERSION}/generated.proto
 	go-to-protobuf --output-base="${GOPATH_SRC}" \
 	--apimachinery-packages="-k8s.io/apimachinery/pkg/util/intstr,-k8s.io/apimachinery/pkg/api/resource,-k8s.io/apimachinery/pkg/runtime/schema,-k8s.io/apimachinery/pkg/runtime,-k8s.io/apimachinery/pkg/apis/meta/v1" \
 	--packages="${PROJECT_APIS},${PROTO_TYPES}" \
 	--proto-import "vendor,${GOPATH_SRC}/github.com/gogo/protobuf/protobuf" \
 	-h hack.txt
 	test -f  pkg/apis/${VERSION}/generated.proto \
-	|| mv ${GOPATH_SRC}/${PROJECT_APIS}/generated.proto pkg/apis/${VERSION}
+	|| cp ${GOPATH_SRC}/${PROJECT_APIS}/generated.proto pkg/apis/${VERSION}
 	@echo ">> generating pkg/protos/types/generated.proto"
 
 

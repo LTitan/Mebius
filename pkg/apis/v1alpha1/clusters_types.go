@@ -16,6 +16,7 @@ type Cluster struct {
 }
 
 type ClusterConditionStatus string
+type ClusterID string
 
 const (
 	ClusterStatusOffline   ClusterConditionStatus = "offline"
