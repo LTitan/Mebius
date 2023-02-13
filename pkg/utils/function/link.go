@@ -45,7 +45,7 @@ func (f *FunctionLink) Do() {
 	}
 	if f.fle != nil {
 		for _, fc := range *f.fle {
-			fc()
+			_ = fc()
 		}
 	}
 }

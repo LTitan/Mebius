@@ -15,6 +15,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"k8s.io/klog/v2"
 )
@@ -52,8 +53,11 @@ func (g *gateway) Run() error {
 			return md
 		}),
 	)
-	dialOption := []grpc.DialOption{grpc.WithInsecure()}
-	protos.RegisterServerHandlerFromEndpoint(ctx, mux, g.opts.Gateway().Endpoints, dialOption)
+	dialOption := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	if err := protos.RegisterServerHandlerFromEndpoint(ctx, mux, g.opts.Gateway().Endpoints, dialOption); err != nil {
+		klog.Errorf("Register ServerHandler from endpoint %s error", g.opts.Gateway().Endpoints)
+		return err
+	}
 	addr := fmt.Sprintf(":%d", g.opts.Gateway().Port)
 
 	server := gin.New()

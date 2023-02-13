@@ -76,8 +76,8 @@ func (m *mcontext) Err() error {
 
 func (m *mcontext) GO(exec func()) {
 	wg := m.Value(_waitGroupKey{}).(*sync.WaitGroup)
+	wg.Add(1)
 	go func() {
-		wg.Add(1)
 		defer wg.Done()
 		// defer func() {
 		// 	// auto recover
