@@ -9,7 +9,7 @@ import (
 	"context"
 	"time"
 
-	v1alpha1 "github.com/LTitan/Mebius/pkg/apis/v1alpha1"
+	v1alpha1 "github.com/LTitan/Mebius/apis/v1alpha1"
 	scheme "github.com/LTitan/Mebius/pkg/clients/clientset/mebius/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"

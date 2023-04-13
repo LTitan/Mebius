@@ -1,6 +1,6 @@
 package types
 
-import "github.com/LTitan/Mebius/pkg/apis/v1alpha1"
+import "github.com/LTitan/Mebius/apis/v1alpha1"
 
 type HeartbeatRequest struct {
 	Name string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`

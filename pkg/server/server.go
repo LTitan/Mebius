@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/LTitan/Mebius/pkg/apis/v1alpha1"
+	"github.com/LTitan/Mebius/apis/v1alpha1"
 	mcontext "github.com/LTitan/Mebius/pkg/context"
 	"github.com/LTitan/Mebius/pkg/factory"
 	"github.com/LTitan/Mebius/pkg/options"

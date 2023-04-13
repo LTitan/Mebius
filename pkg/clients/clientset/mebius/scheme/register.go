@@ -6,7 +6,7 @@ this is the Mebius Project
 package scheme
 
 import (
-	mebiusv1alpha1 "github.com/LTitan/Mebius/pkg/apis/v1alpha1"
+	mebiusv1alpha1 "github.com/LTitan/Mebius/apis/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

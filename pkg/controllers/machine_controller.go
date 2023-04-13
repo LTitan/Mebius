@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/LTitan/Mebius/pkg/apis/v1alpha1"
+	"github.com/LTitan/Mebius/apis/v1alpha1"
 	informers "github.com/LTitan/Mebius/pkg/clients/informer/externalversions/apis/v1alpha1"
 	mcontext "github.com/LTitan/Mebius/pkg/context"
 	"k8s.io/apimachinery/pkg/api/errors"
