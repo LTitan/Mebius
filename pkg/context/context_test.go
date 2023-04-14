@@ -11,8 +11,9 @@ import (
 func Test_mcontext_WaitGoroutine(t *testing.T) {
 	mctx := WithWaitGroup(context.Background())
 	for i := 0; i < 100; i++ {
-		mctx.GO(func() {
-			t.Logf("fake goroutine\n")
+		index := i
+		mctx.Go(func() {
+			t.Logf("fake goroutine %d\n", index)
 		})
 	}
 	mctx.WaitGoroutine()
