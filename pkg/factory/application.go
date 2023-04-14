@@ -1,6 +1,7 @@
 package factory
 
 import (
+	"sync"
 	"time"
 
 	mebiusclientset "github.com/LTitan/Mebius/pkg/clients/clientset/mebius"
@@ -10,6 +11,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+)
+
+var (
+	once = sync.Once{}
 )
 
 type Application interface {
@@ -40,11 +45,18 @@ func NewBaseFramework(opts *options.GlobalOption) FrameworkInterface {
 }
 
 func (bf *BaseFramework) Init() error {
-	return function.NewFunctionLinkErr(
-		bf.buildKubeConfig,
-		bf.buildKubeClientSet,
-		bf.buildClientSet,
-		bf.buildInformer).DoErr()
+	// only init once
+	var err error
+	once.Do(
+		func() {
+			err = function.NewFunctionLinkErr(
+				bf.buildKubeConfig,
+				bf.buildKubeClientSet,
+				bf.buildClientSet,
+				bf.buildInformer).DoErr()
+		},
+	)
+	return err
 }
 
 func (bf *BaseFramework) GetKubeConfig() *rest.Config {

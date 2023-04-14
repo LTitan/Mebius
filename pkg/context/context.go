@@ -21,7 +21,7 @@ type MContext interface {
 	WithCancel() (MContext, context.CancelFunc)
 
 	// goroutine
-	GO(exec func())
+	Go(exec func())
 	WaitGoroutine()
 
 	// basic
@@ -74,17 +74,11 @@ func (m *mcontext) Err() error {
 	return m.Ctx.Err()
 }
 
-func (m *mcontext) GO(exec func()) {
+func (m *mcontext) Go(exec func()) {
 	wg := m.Value(_waitGroupKey{}).(*sync.WaitGroup)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		// defer func() {
-		// 	// auto recover
-		// 	if err := recover(); err != nil {
-		// 		klog.Errorln(err)
-		// 	}
-		// }()
 		exec()
 	}()
 }

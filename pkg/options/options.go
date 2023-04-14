@@ -1,7 +1,9 @@
 package options
 
 import (
+	"flag"
 	"fmt"
+	"os"
 
 	"github.com/LTitan/Mebius/pkg/utils/function"
 	"github.com/spf13/cobra"
@@ -68,6 +70,7 @@ func (g *GlobalOption) GetCommand() *cobra.Command {
 }
 
 func (g *GlobalOption) RegisteredRunE(run func(opt *GlobalOption) func(cmd *cobra.Command, args []string) error) {
+
 	g.cmd.RunE = run(g)
 }
 
@@ -80,7 +83,9 @@ func NewRootCommand() *GlobalOption {
 			// TODO: We may need a subcommand to execute it
 		},
 	}
-	klog.InitFlags(nil)
+	fs := flag.NewFlagSet(os.Args[0], flag.PanicOnError)
+	klog.InitFlags(fs)
+	g.cmd.PersistentFlags().AddGoFlagSet(fs)
 	g.Parse()
 	return g
 }

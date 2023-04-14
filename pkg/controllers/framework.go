@@ -79,8 +79,8 @@ func (f *Framework) Run() (err error) {
 	}
 	stopCh := options.SetupSignalHandler()
 	ctx, cancel := mcontext.WithWaitGroup(context.Background()).WithCancel()
-	ctx.GO(func() { <-stopCh; cancel() })
-	ctx.GO(func() {
+	ctx.Go(func() { <-stopCh; cancel() })
+	ctx.Go(func() {
 		f.GetMebiusSharedInformerFactory().Start(ctx.Done())
 	})
 	return f.controllerSet[f.opts.Controller().Name].Run(ctx, f.opts.ThreadSize)
