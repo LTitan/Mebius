@@ -1,6 +1,6 @@
 PROJECT=github.com/LTitan/Mebius
 VERSION?=v1alpha1
-PROJECT_APIS=${PROJECT}/pkg/apis/${VERSION}
+PROJECT_APIS=${PROJECT}/apis/${VERSION}
 PROTO_TYPES=${PROJECT}/pkg/protos/types
 CLIENTSET=${PROJECT}/pkg/clients/clientset
 INFORMER=${PROJECT}/pkg/clients/informer
@@ -42,32 +42,36 @@ install-grpc-env:
 	&& rm -rf tmp
 
 deepcopy-gen:
-	@echo ">> generating pkg/apis/${VERSION}/deepcopy_generated.go"
+	@echo ">> generating apis/${VERSION}/deepcopy_generated.go"
 	deepcopy-gen --input-dirs ${PROJECT_APIS} \
 		--output-package ${PROJECT_APIS} -h hack.txt \
 	--alsologtostderr
-	mv ${GOPATH_SRC}/${PROJECT_APIS}/deepcopy_generated.go pkg/apis/${VERSION}
+	diff ${GOPATH_SRC}/${PROJECT_APIS}/deepcopy_generated.go apis/${VERSION}/deepcopy_generated.go \
+	|| mv ${GOPATH_SRC}/${PROJECT_APIS}/deepcopy_generated.go apis/${VERSION}
 
 register-gen:
-	@echo ">> generating pkg/apis/${VERSION}/zz_generated.register.go"
+	@echo ">> generating apis/${VERSION}/zz_generated.register.go"
 	register-gen --input-dirs ${PROJECT_APIS} \
 		--output-package ${PROJECT_APIS} -h hack.txt \
 	--alsologtostderr
-	mv ${GOPATH_SRC}/${PROJECT_APIS}/zz_generated.register.go pkg/apis/${VERSION}
+	diff ${GOPATH_SRC}/${PROJECT_APIS}/zz_generated.register.go apis/${VERSION}/zz_generated.register.go \
+	|| mv ${GOPATH_SRC}/${PROJECT_APIS}/zz_generated.register.go apis/${VERSION}
 
 defaulter-gen:
-	@echo ">> generating pkg/apis/${VERSION}/zz_generated.defaults.go"
+	@echo ">> generating apis/${VERSION}/zz_generated.defaults.go"
 	defaulter-gen --input-dirs ${PROJECT_APIS} \
 		--output-package ${PROJECT_APIS} -h hack.txt \
 	--alsologtostderr
-	mv ${GOPATH_SRC}/${PROJECT_APIS}/zz_generated.defaults.go pkg/apis/${VERSION}
+	diff ${GOPATH_SRC}/${PROJECT_APIS}/zz_generated.defaults.go apis/${VERSION}/zz_generated.defaults.go \
+	|| mv ${GOPATH_SRC}/${PROJECT_APIS}/zz_generated.defaults.go apis/${VERSION}
 
 openapi-gen:
-	@echo ">> generating pkg/apis/${VERSION}/openapi_generated.go"
+	@echo ">> generating apis/${VERSION}/openapi_generated.go"
 	openapi-gen --input-dirs ${PROJECT_APIS} \
 		--output-package ${PROJECT_APIS} -h hack.txt \
 	--alsologtostderr
-	mv ${GOPATH_SRC}/${PROJECT_APIS}/openapi_generated.go pkg/apis/${VERSION}
+	diff ${GOPATH_SRC}/${PROJECT_APIS}/openapi_generated.go apis/${VERSION}/openapi_generated.go \
+	|| mv ${GOPATH_SRC}/${PROJECT_APIS}/openapi_generated.go apis/${VERSION}
 
 client-gen:
 	@echo ">> generating pkg/clients/clientset..."
@@ -76,7 +80,7 @@ client-gen:
 		--clientset-name='mebius' \
 		--fake-clientset=false \
 		--input-base=${PROJECT} \
-		--input='pkg/apis/${VERSION}' \
+		--input='apis/${VERSION}' \
 		--output-package ${CLIENTSET} -h hack.txt \
 	--alsologtostderr
 	mv ${GOPATH_SRC}/${CLIENTSET} pkg/clients
@@ -99,20 +103,20 @@ informer-gen:
 	mv ${GOPATH_SRC}/${INFORMER} pkg/clients
 
 go-to-protobuf: vendor
-	@echo ">> generating pkg/apis/${VERSION}/generated.proto"
-	rm -f pkg/apis/${VERSION}/generated.proto
+	@echo ">> generating apis/${VERSION}/generated.proto"
+	rm -f apis/${VERSION}/generated.proto
 	go-to-protobuf --output-base="${GOPATH_SRC}" \
-	--apimachinery-packages="-k8s.io/apimachinery/pkg/util/intstr,-k8s.io/apimachinery/pkg/api/resource,-k8s.io/apimachinery/pkg/runtime/schema,-k8s.io/apimachinery/pkg/runtime,-k8s.io/apimachinery/pkg/apis/meta/v1" \
+	--apimachinery-packages="-k8s.io/apimachinery/pkg/util/intstr,-k8s.io/apimachinery/pkg/api/resource,-k8s.io/apimachinery/pkg/runtime/schema,-k8s.io/apimachinery/pkg/runtime,-k8s.io/apimachinery/pkg/apis/meta/v1,-k8s.io/api/core/v1" \
 	--packages="${PROJECT_APIS},${PROTO_TYPES}" \
-	--proto-import "vendor,${GOPATH_SRC}/github.com/gogo/protobuf/protobuf" \
+	--proto-import "vendor,${GOPATH_SRC}/github.com/gogo/protobuf/protobuf,vendor/k8s.io/apimachinery/pkg/apis/meta/v1" \
 	-h hack.txt
-	test -f  pkg/apis/${VERSION}/generated.proto \
-	|| cp ${GOPATH_SRC}/${PROJECT_APIS}/generated.proto pkg/apis/${VERSION}
+	test -f  apis/${VERSION}/generated.proto \
+	|| cp ${GOPATH_SRC}/${PROJECT_APIS}/generated.proto apis/${VERSION}
 	@echo ">> generating pkg/protos/types/generated.proto"
 
 
 crd:
-	controller-gen crd:crdVersions=v1,allowDangerousTypes=true paths="./pkg/apis/..." output:crd:artifacts:config=crds
+	controller-gen crd:crdVersions=v1,allowDangerousTypes=true paths="./apis/..." output:crd:artifacts:config=crds
 
 goimports:
 	go install golang.org/x/tools/cmd/goimports@latest

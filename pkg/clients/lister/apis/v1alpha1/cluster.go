@@ -6,7 +6,7 @@ this is the Mebius Project
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/LTitan/Mebius/pkg/apis/v1alpha1"
+	v1alpha1 "github.com/LTitan/Mebius/apis/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"

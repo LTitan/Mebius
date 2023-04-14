@@ -8,7 +8,7 @@ package v1alpha1
 import (
 	"net/http"
 
-	v1alpha1 "github.com/LTitan/Mebius/pkg/apis/v1alpha1"
+	v1alpha1 "github.com/LTitan/Mebius/apis/v1alpha1"
 	"github.com/LTitan/Mebius/pkg/clients/clientset/mebius/scheme"
 	rest "k8s.io/client-go/rest"
 )

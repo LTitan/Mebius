@@ -303,6 +303,28 @@
       },
       "title": "OwnerReference contains enough information to let you identify an owning\nobject. An owning object must be in the same namespace as the dependent, or\nbe cluster-scoped, so there is no namespace field.\n+structType=atomic"
     },
+    "v1Taint": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "Required. The taint key to be applied to a node."
+        },
+        "value": {
+          "type": "string",
+          "title": "The taint value corresponding to the taint key.\n+optional"
+        },
+        "effect": {
+          "type": "string",
+          "description": "Required. The effect of the taint on pods\nthat do not tolerate the taint.\nValid effects are NoSchedule, PreferNoSchedule and NoExecute."
+        },
+        "timeAdded": {
+          "$ref": "#/definitions/v1Time",
+          "title": "TimeAdded represents the time at which the taint was added.\nIt is only written for NoExecute taints.\n+optional"
+        }
+      },
+      "description": "The node this Taint is attached to has the \"effect\" on\nany pod that does not tolerate the Taint."
+    },
     "v1Time": {
       "type": "object",
       "properties": {
@@ -404,7 +426,7 @@
         "taints": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/v1alpha1Taint"
+            "$ref": "#/definitions/v1Taint"
           },
           "title": "Refer to the taints mechanism of k8s.\n+optional"
         },
@@ -479,27 +501,6 @@
         },
         "architecture": {
           "type": "string"
-        }
-      }
-    },
-    "v1alpha1Taint": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string",
-          "description": "Required. The taint key to be applied to a node."
-        },
-        "value": {
-          "type": "string",
-          "title": "The taint value corresponding to the taint key.\n+optional"
-        },
-        "effect": {
-          "type": "string",
-          "description": "Required. The effect of the taint on pods\nthat do not tolerate the taint.\nValid effects are NoSchedule, PreferNoSchedule and NoExecute."
-        },
-        "timeAdded": {
-          "$ref": "#/definitions/v1Time",
-          "title": "TimeAdded represents the time at which the taint was added.\nIt is only written for NoExecute taints.\n+optional"
         }
       }
     }

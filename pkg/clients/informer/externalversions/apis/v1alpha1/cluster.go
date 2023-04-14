@@ -9,7 +9,7 @@ import (
 	"context"
 	time "time"
 
-	apisv1alpha1 "github.com/LTitan/Mebius/pkg/apis/v1alpha1"
+	apisv1alpha1 "github.com/LTitan/Mebius/apis/v1alpha1"
 	mebius "github.com/LTitan/Mebius/pkg/clients/clientset/mebius"
 	internalinterfaces "github.com/LTitan/Mebius/pkg/clients/informer/externalversions/internalinterfaces"
 	v1alpha1 "github.com/LTitan/Mebius/pkg/clients/lister/apis/v1alpha1"
