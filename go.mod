@@ -19,9 +19,12 @@ require (
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
+	github.com/go-resty/resty/v2 v2.7.0 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
+	github.com/itchyny/gojq v0.12.12 // indirect
+	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/mattn/go-isatty v0.0.16 // indirect
+	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
@@ -57,7 +60,7 @@ require (
 	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/oauth2 v0.3.0 // indirect
 	golang.org/x/sync v0.1.0
-	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/term v0.3.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect

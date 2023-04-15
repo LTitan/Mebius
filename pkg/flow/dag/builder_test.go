@@ -11,14 +11,14 @@ var testData = `dag:
 - name: step1
   type: shell
   command: bash
-  content: echo 1024
+  content: echo -n 1024
   output_alias:
     # alias shell stdout to size, and put it into the dag context
     size: null
 
 - name: step2
   type: http
-  command: POST http://gateway.mebius.io/api/v1/stats
+  command: GET http://localhost:8023/apiv1/test
   content: |
     {
       "key1": "some value",
@@ -31,7 +31,8 @@ var testData = `dag:
   output_alias:
     # for jq
     # alias http response data.obj to newObj, and put it into the dag context
-    response.data.obj: newObj
+    data: newObj
+    codex: newCode
   depends:
     - step1
   conditions:
@@ -48,7 +49,13 @@ var testData = `dag:
   command: bash
   content: echo 'this value is less than 100!'
   depends:
-    - step1`
+    - step1
+    - step4
+
+- name: step4
+  type: shell
+  command: bash
+  content: echo 'step 4'`
 
 func TestDag_Run(t *testing.T) {
 	type Data struct {

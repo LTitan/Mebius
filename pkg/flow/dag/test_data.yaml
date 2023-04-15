@@ -40,3 +40,8 @@ dag:
   content: echo 'this value is less than 100!'
   depends:
     - step1
+
+- name: step4
+  type: shell
+  command: bash
+  content: echo 'step 4'
