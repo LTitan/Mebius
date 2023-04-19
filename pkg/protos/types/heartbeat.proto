@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package github.com.LTitan.Mebius.pkg.protos.types;
+
+import "github.com/LTitan/Mebius/apis/v1alpha1/generated.proto";
+
+// Package-wide variables from generator "generated".
+option go_package = "github.com/LTitan/Mebius/pkg/protos/types;types";
+
+message HeartbeatRequest {
+  string name = 1;
+  string uuid = 2;
+}
+
+message HeartbeatResponse {
+  int32 code = 1;
+  string message = 2;
+  repeated github.com.LTitan.Mebius.apis.v1alpha1.Machine data = 3;
+}

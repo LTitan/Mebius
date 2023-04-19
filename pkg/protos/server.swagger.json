@@ -4,6 +4,11 @@
     "title": "pkg/protos/server.proto",
     "version": "version not set"
   },
+  "tags": [
+    {
+      "name": "Server"
+    }
+  ],
   "consumes": [
     "application/json"
   ],
@@ -24,7 +29,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -56,7 +61,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -75,24 +80,9 @@
     }
   },
   "definitions": {
-    "protobufAny": {
+    "googlerpcStatus": {
       "type": "object",
       "properties": {
-        "type_url": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "runtimeError": {
-      "type": "object",
-      "properties": {
-        "error": {
-          "type": "string"
-        },
         "code": {
           "type": "integer",
           "format": "int32"
@@ -103,10 +93,20 @@
         "details": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
     },
     "typesExampleResponse": {
       "type": "object",
@@ -140,6 +140,7 @@
         "data": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/v1alpha1Machine"
           }
         }
@@ -252,6 +253,7 @@
         "ownerReferences": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/v1OwnerReference"
           },
           "title": "List of objects depended by this object. If ALL objects in the list have\nbeen deleted, this object will be garbage collected. If this object is managed by a controller,\nthen an entry in this list will point to this controller, with the controller field set to true.\nThere cannot be more than one managing controller.\n+optional\n+patchMergeKey=uid\n+patchStrategy=merge"
@@ -266,6 +268,7 @@
         "managedFields": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/v1ManagedFieldsEntry"
           },
           "description": "ManagedFields maps workflow-id and version to the set of fields\nthat are managed by that workflow. This is mostly for internal\nhousekeeping, and users typically shouldn't need to set or\nunderstand this field. A workflow can be the user's name, a\ncontroller's name, or the name of a specific apply path like\n\"ci-cd\". The set of fields is always in the version that the\nworkflow used when modifying the object.\n\n+optional"
@@ -376,11 +379,11 @@
         "status": {
           "type": "string"
         },
-        "last_heartbeat_time": {
+        "lastHeartbeatTime": {
           "$ref": "#/definitions/v1Time",
           "title": "+optional"
         },
-        "last_transition_time": {
+        "lastTransitionTime": {
           "$ref": "#/definitions/v1Time",
           "title": "+optional"
         },
@@ -426,15 +429,16 @@
         "taints": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/v1Taint"
           },
           "title": "Refer to the taints mechanism of k8s.\n+optional"
         },
-        "desired_cluster": {
+        "desiredCluster": {
           "type": "string",
           "title": "Flags which cluster the machine expects to join.\nThe default value is null, meaning it does not want to join any cluster.\n+optional"
         },
-        "desired_role": {
+        "desiredRole": {
           "type": "string",
           "title": "Flag the role Machine expects to become in the Cluster.\nThe default is Vagrant, meaning it does not join the Cluster.\n+optional"
         }
@@ -443,13 +447,14 @@
     "v1alpha1MachineStatus": {
       "type": "object",
       "properties": {
-        "mebius_endpoint": {
+        "mebiusEndpoint": {
           "$ref": "#/definitions/v1alpha1MachineMebiusEndpoint",
           "title": "Records the port of the agent.\n+optional"
         },
-        "daemon_endpoints": {
+        "daemonEndpoints": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/v1alpha1MachineDaemonEndpoint"
           },
           "title": "Records the ports of daemons enabled by the agent.\n+optional"
@@ -461,26 +466,28 @@
         "conditions": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/v1alpha1MachineCondition"
           },
           "title": "Conditions of the Machine (agent running properly, memory pressure free, disk pressure free, network reachable).\n+optional"
         },
-        "machine_info": {
+        "machineInfo": {
           "$ref": "#/definitions/v1alpha1MachineSystemInfo",
           "title": "Information about the Machine system to be reported by the agent.\n+optional"
         },
         "addresses": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/v1alpha1MachineAddress"
           },
           "title": "Machine address, a variety of types, temporarily on a LAN IP is almost.\nTODO: If the Agent supports the IPIP tunnel, it can also use non-LAN IP addresses to remove Layer 2 reachability\n+optional"
         },
-        "owner_cluster": {
+        "ownerCluster": {
           "type": "string",
           "title": "The cluster that machine actually joins.\n+optional"
         },
-        "machine_role": {
+        "machineRole": {
           "type": "string",
           "title": "The role of Machine in the Cluster.\nIf Machine does not join the Cluster, it is positioned as Vagrant.\n+optional"
         }
@@ -489,14 +496,14 @@
     "v1alpha1MachineSystemInfo": {
       "type": "object",
       "properties": {
-        "machine_id": {
+        "machineId": {
           "type": "string",
           "title": "MachineID reported by the machine. For unique machine identification\nin the cluster this field is preferred. Learn more from man(5)\nmachine-id: \u003chttp://man7.org/linux/man-pages/man5/machine-id.5.html\u003e"
         },
-        "kernel_version": {
+        "kernelVersion": {
           "type": "string"
         },
-        "operation_system": {
+        "operationSystem": {
           "type": "string"
         },
         "architecture": {

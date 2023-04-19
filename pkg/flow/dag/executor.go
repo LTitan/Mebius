@@ -33,7 +33,7 @@ func (be *BashExecutor) executeWithStdout(command string) (string, error) {
 	cmd := exec.Command("bash", "-c", command)
 	cmd.Stdout = &stdout
 	err := cmd.Run()
-	return stdout.String(), err
+	return strings.Trim(stdout.String(), "\n"), err
 }
 
 type HTTPExecutor struct {

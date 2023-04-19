@@ -37,7 +37,7 @@ func (rs *RawServer) GetMachine(ctx context.Context, req *types.ExampleRequest) 
 }
 
 func (rs *RawServer) Heartbeat(ctx context.Context, req *types.HeartbeatRequest) (resp *types.HeartbeatResponse, err error) {
-	klog.Infof("%+v", *req)
+	klog.Infof("%+v", req.String())
 	resp = &types.HeartbeatResponse{
 		Code: 0,
 	}

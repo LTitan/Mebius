@@ -5,6 +5,7 @@ PROTO_TYPES=${PROJECT}/pkg/protos/types
 CLIENTSET=${PROJECT}/pkg/clients/clientset
 INFORMER=${PROJECT}/pkg/clients/informer
 LISTER=${PROJECT}/pkg/clients/lister
+PACKAGES = k8s.io/apimachinery/pkg/api/resource/generated.proto=k8s.io/apimachinery/pkg/api/resource k8s.io/apimachinery/pkg/runtime/generated.proto=k8s.io/apimachinery/pkg/runtime k8s.io/apimachinery/pkg/runtime/schema/generated.proto=k8s.io/apimachinery/pkg/runtime/schema k8s.io/apimachinery/pkg/apis/meta/v1/generated.proto=k8s.io/apimachinery/pkg/apis/meta/v1 k8s.io/apimachinery/pkg/util/intstr/generated.proto=k8s.io/apimachinery/pkg/util/intstr k8s.io/api/core/v1/generated.proto=k8s.io/api/core/v1 github.com/LTitan/Mebius/apis/v1alpha1/generated.proto=github.com/LTitan/Mebius/apis/v1alpha1
 
 ifndef $(GOPATH)
 	GOPATH=$(shell go env GOPATH)
@@ -24,12 +25,10 @@ install-tools: goimports install-grpc-env
 	go install k8s.io/code-generator/cmd/openapi-gen@v0.25.3
 	go install k8s.io/code-generator/cmd/defaulter-gen@v0.25.3
 	go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.10.0
-	go install -mod=readonly github.com/gogo/protobuf/protoc-gen-gogo@v1.3.2
-	go install -mod=readonly github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway@latest
-	go install -mod=readonly github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger@latest
+	go install -mod=readonly github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest
+	go install -mod=readonly github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest
 	go install -mod=readonly google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install -mod=readonly google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-	go install -mod=readonly github.com/gogo/protobuf/protoc-gen-gogo@latest
 	go install -mod=readonly github.com/mwitkow/go-proto-validators/protoc-gen-govalidators@latest
 	go install -mod=readonly github.com/rakyll/statik@latest
 
@@ -102,17 +101,17 @@ informer-gen:
 	--alsologtostderr
 	mv ${GOPATH_SRC}/${INFORMER} pkg/clients
 
-go-to-protobuf: vendor
-	@echo ">> generating apis/${VERSION}/generated.proto"
-	rm -f apis/${VERSION}/generated.proto
-	go-to-protobuf --output-base="${GOPATH_SRC}" \
-	--apimachinery-packages="-k8s.io/apimachinery/pkg/util/intstr,-k8s.io/apimachinery/pkg/api/resource,-k8s.io/apimachinery/pkg/runtime/schema,-k8s.io/apimachinery/pkg/runtime,-k8s.io/apimachinery/pkg/apis/meta/v1,-k8s.io/api/core/v1" \
-	--packages="${PROJECT_APIS},${PROTO_TYPES}" \
-	--proto-import "vendor,${GOPATH_SRC}/github.com/gogo/protobuf/protobuf,vendor/k8s.io/apimachinery/pkg/apis/meta/v1" \
-	-h hack.txt
-	test -f  apis/${VERSION}/generated.proto \
-	|| cp ${GOPATH_SRC}/${PROJECT_APIS}/generated.proto apis/${VERSION}
-	@echo ">> generating pkg/protos/types/generated.proto"
+# go-to-protobuf: vendor
+# 	@echo ">> generating apis/${VERSION}/generated.proto"
+# 	rm -f apis/${VERSION}/generated.proto
+# 	go-to-protobuf --output-base="${GOPATH_SRC}" \
+# 	--apimachinery-packages="-k8s.io/apimachinery/pkg/util/intstr,-k8s.io/apimachinery/pkg/api/resource,-k8s.io/apimachinery/pkg/runtime/schema,-k8s.io/apimachinery/pkg/runtime,-k8s.io/apimachinery/pkg/apis/meta/v1,-k8s.io/api/core/v1" \
+# 	--packages="${PROJECT_APIS},${PROTO_TYPES}" \
+# 	--proto-import "vendor,${GOPATH_SRC}/github.com/gogo/protobuf/protobuf,vendor/k8s.io/apimachinery/pkg/apis/meta/v1" \
+# 	-h hack.txt
+# 	test -f  apis/${VERSION}/generated.proto \
+# 	|| cp ${GOPATH_SRC}/${PROJECT_APIS}/generated.proto apis/${VERSION}
+# 	@echo ">> generating pkg/protos/types/generated.proto"
 
 
 crd:
@@ -121,17 +120,35 @@ crd:
 goimports:
 	go install golang.org/x/tools/cmd/goimports@latest
 
-grpc: go-to-protobuf
+
+grpc-types:
 	protoc \
 	-I . \
 	-I ${GOPATH_SRC} \
 	-I ./vendor \
-	-I ${GOPATH_SRC}/github.com/gogo/googleapis \
+	-I ${GOPATH_SRC}/github.com/googleapis/googleapis \
 	-I /usr/local/include \
-	--gogo_out=plugins=grpc,paths=source_relative:./ \
-	--grpc-gateway_out=logtostderr=true,v=10,allow_patch_feature=true,paths=source_relative:./ \
-	--swagger_out=logtostderr=true,v=10:./ \
-	--govalidators_out=gogoimport=true,paths=source_relative,:./ \
+	--go_out ./ --go_opt paths=source_relative \
+	$(foreach var, ${PACKAGES},--go_opt=M${var} ) \
+	pkg/protos/types/*.proto
+
+grpc: grpc-types
+	protoc \
+	-I . \
+	-I ${GOPATH_SRC} \
+	-I ./vendor \
+	-I ${GOPATH_SRC}/github.com/googleapis/googleapis \
+	-I /usr/local/include \
+	--go_out ./ --go_opt paths=source_relative \
+	$(foreach var, ${PACKAGES},--go_opt=M${var} ) \
+	--go-grpc_out ./ --go-grpc_opt paths=source_relative,require_unimplemented_servers=false \
+	$(foreach var, ${PACKAGES},--go-grpc_opt=M${var} ) \
+	--grpc-gateway_out ./ --grpc-gateway_opt logtostderr=true \
+    --grpc-gateway_opt paths=source_relative \
+    --grpc-gateway_opt generate_unbound_methods=true \
+	$(foreach var, ${PACKAGES},--grpc-gateway_opt=M${var} ) \
+	--openapiv2_out ./ --openapiv2_opt logtostderr=true \
+	$(foreach var, ${PACKAGES},--openapiv2_opt=M${var} ) \
 	pkg/protos/*.proto
 
 fmt: goimports

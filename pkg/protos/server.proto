@@ -2,34 +2,23 @@ syntax = "proto3";
 package github.com.LTitan.Mebius.pkg.protos;
 
 option go_package = "github.com/LTitan/Mebius/pkg/protos;protos";
-import "github.com/gogo/protobuf/gogoproto/gogo.proto";
-import "github.com/LTitan/Mebius/pkg/protos/types/generated.proto";
-import "github.com/gogo/googleapis/google/api/annotations.proto";
-
-// Enable custom Marshal method.
-option (gogoproto.marshaler_all) = true;
-// Enable custom Unmarshal method.
-option (gogoproto.unmarshaler_all) = true;
-// Enable custom Size method (Required by Marshal and Unmarshal).
-option (gogoproto.sizer_all) = true;
-// Enable registration with golang/protobuf for the grpc-gateway.
-option (gogoproto.goproto_registration) = true;
-// Enable generation of XXX_MessageName methods for grpc-go/status.
-option (gogoproto.messagename_all) = true;
+import "github.com/LTitan/Mebius/pkg/protos/types/example.proto";
+import "github.com/LTitan/Mebius/pkg/protos/types/heartbeat.proto";
+import "google/api/annotations.proto";
 
 service Server {
-  rpc GetMachine(github.com.LTitan.Mebius.pkg.protos.types.ExampleRequest)
-      returns (github.com.LTitan.Mebius.pkg.protos.types.ExampleResponse) {
+  rpc GetMachine(Mebius.pkg.protos.types.ExampleRequest)
+      returns (Mebius.pkg.protos.types.ExampleResponse) {
     option (google.api.http) = {
       get : "/api/v1alpha1/machine"
     };
   }
 
-  rpc Heartbeat(github.com.LTitan.Mebius.pkg.protos.types.HeartbeatRequest)
-      returns (github.com.LTitan.Mebius.pkg.protos.types.HeartbeatResponse) {
+  rpc Heartbeat(Mebius.pkg.protos.types.HeartbeatRequest)
+      returns (Mebius.pkg.protos.types.HeartbeatResponse) {
     option (google.api.http) = {
       post : "/api/v1alpha1/heartbeat"
-      body: "*"
+      body : "*"
     };
   }
 }
