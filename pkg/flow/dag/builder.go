@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"golang.org/x/sync/errgroup"
+	"k8s.io/klog/v2"
 )
 
 func BuildDag(nodes []*DagNode) *Dag {
@@ -31,7 +32,10 @@ func BuildDag(nodes []*DagNode) *Dag {
 }
 
 func (dag *Dag) Run(ctx context.Context) error {
-	return dag.executeIndgreeZeroNodes(ctx, dag.head)
+	dag.finished = 0
+	err := dag.executeIndgreeZeroNodes(ctx, dag.head)
+	klog.Infof("dag task finished %d tasks, and left %d tasks not to execute", dag.finished, dag.length-dag.finished)
+	return err
 }
 
 func (dag *Dag) executeIndgreeZeroNodes(ctx context.Context, nodes []*DagNode) error {
@@ -41,6 +45,7 @@ func (dag *Dag) executeIndgreeZeroNodes(ctx context.Context, nodes []*DagNode) e
 	if err := dag.executeNodes(ctx, nodes); err != nil {
 		return err
 	}
+	dag.finished += len(nodes)
 	tmpNodes := []*DagNode{}
 	for _, head := range nodes {
 		for _, next := range head.Next {

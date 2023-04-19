@@ -2,9 +2,11 @@ package dag
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 	"sync"
+
+	"github.com/LTitan/Mebius/pkg/utils/function"
+	"k8s.io/klog/v2"
 )
 
 type DagType string
@@ -23,40 +25,79 @@ type DagCondition struct {
 }
 
 type DagNode struct {
-	Name    string `json:"name,omitempty"`
-	Type    string `json:"type,omitempty"`
-	Command string `json:"command,omitempty"`
-	Content string `json:"content,omitempty"`
-	// alias any=$(echo 'hello')
-	OutputAlias map[string]string `json:"output_alias,omitempty"`
-	// for http type
-	Headers map[string]string `json:"headers,omitempty"`
-	Timeout int               `json:"timeout,omitempty"`
-	// dep and condition
-	Depends    []string       `json:"depends,omitempty"`
-	Conditions []DagCondition `json:"conditions,omitempty"`
+	Name          string            `json:"name,omitempty"`
+	Type          string            `json:"type,omitempty"`
+	Command       string            `json:"command,omitempty"`
+	Content       string            `json:"content,omitempty"`
+	OutputAlias   map[string]string `json:"output_alias,omitempty"` // alias any=$(echo 'hello')
+	Headers       map[string]string `json:"headers,omitempty"`      // for http type
+	Timeout       int               `json:"timeout,omitempty"`
+	Depends       []string          `json:"depends,omitempty"` // dep and condition
+	Conditions    []DagCondition    `json:"conditions,omitempty"`
+	Debug         bool              `json:"debug,omitempty"`
+	Retry         int               `json:"retry,omitempty"`
+	RetryWaitTime int               `json:"retry_wait_time,omitempty"`
 
 	// for more context
 	PreContext DagContext `json:"-"`
 	Next       []*DagNode `json:"-"`
-
+	// utils
 	done bool
 	mux  sync.Mutex
+	fl   function.FunctionLinkInterface
 }
 
 type Dag struct {
 	head     []*DagNode
 	length   int
+	finished int
 	raw      map[string]*DagNode
 	indegree map[string]int
 }
 
-// TODO: impl shell and http executor
 func (dag *DagNode) Execute() error {
 	var (
 		executor Executor
-		err      error
+		result   string
 	)
+	dag.fl = function.NewFunctionLinkErr(
+		dag.parseTemplate,
+		func() error {
+			if dag.Debug {
+				klog.Infof("Task [%s] parse dag.Command: %s", dag.Name, dag.Command)
+				klog.Infof("Task [%s] parse dag.Content: %s", dag.Name, dag.Content)
+			}
+			return nil
+		},
+		func() (err error) {
+			// new executor
+			switch dag.Type {
+			case string(httpRequest):
+				executor, err = NewHTTPExecutor(dag.Command, dag.Timeout, dag.Headers)
+			case string(shellType):
+				executor = &BashExecutor{}
+			}
+			if err != nil {
+				return err
+			}
+			result, err = executor.Execute(dag.Content)
+			return err
+		},
+	)
+	if err := dag.fl.DoErr(); err != nil {
+		return err
+	}
+	if dag.Debug {
+		klog.Infof("Task [%s] is executing success, execute result: %s", dag.Name, result)
+	}
+	if len(dag.OutputAlias) == 0 {
+		return nil
+	}
+	return dag.backwardPropagateContext(result)
+}
+
+func (dag *DagNode) parseTemplate() error {
+	var err error
 	dag.Command, err = warpMapValueToStr(dag.PreContext, dag.Command)
 	if err != nil {
 		return err
@@ -65,25 +106,13 @@ func (dag *DagNode) Execute() error {
 	if err != nil {
 		return err
 	}
-	// new executor
-	switch dag.Type {
-	case string(httpRequest):
-		executor, err = NewHTTPExecutor(dag.Command, dag.Timeout, dag.Headers)
-	case string(shellType):
-		executor = &BashExecutor{}
-	}
-	if err != nil {
-		return err
-	}
-	result, err := executor.Execute(dag.Content)
-	if err != nil {
-		return err
-	}
-	fmt.Println(dag.Name, "is executing success!")
-	if len(dag.OutputAlias) == 0 {
-		return nil
-	}
+	return err
+}
 
+func (dag *DagNode) backwardPropagateContext(result string) error {
+	var (
+		err error
+	)
 	// parse context to the next
 	ctx := dag.PreContext
 	switch dag.Type {
@@ -105,6 +134,7 @@ func (dag *DagNode) Execute() error {
 			ctx[replaceKey] = value
 		}
 	}
+	// backward propagate
 	for _, next := range dag.Next {
 		next.mux.Lock()
 		if next.PreContext == nil {
@@ -121,6 +151,11 @@ func (dag *DagNode) Execute() error {
 
 func (dag *DagNode) ConditionValid() bool {
 	flag := true
+	defer func() {
+		if dag.Debug {
+			klog.Infof("Task [%s] conditions determine result is: %v", dag.Name, flag)
+		}
+	}()
 	for _, condition := range dag.Conditions {
 		if !flag {
 			return flag

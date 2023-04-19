@@ -11,10 +11,11 @@ var testData = `dag:
 - name: step1
   type: shell
   command: bash
-  content: echo -n 1024
+  content: echo 1024
   output_alias:
     # alias shell stdout to size, and put it into the dag context
     size: null
+  debug: true
 
 - name: step2
   type: http
@@ -37,13 +38,14 @@ var testData = `dag:
     - step1
   conditions:
     - input: ${{size}}
-      expression: '>='      
+      expression: ">="
       expected: 100
+  debug: true
 
 - name: step3
   conditions:
     - input: ${{size}}
-      expression: '<'
+      expression: "<"
       expected: 100
   type: shell
   command: bash
@@ -51,11 +53,21 @@ var testData = `dag:
   depends:
     - step1
     - step4
+  debug: true
 
 - name: step4
   type: shell
   command: bash
-  content: echo 'step 4'`
+  content: echo 'step 4'
+  debug: true
+
+- name: step5
+  type: shell
+  command: bash
+  content: echo 'step 5'
+  depends:
+    - step2
+  debug: true`
 
 func TestDag_Run(t *testing.T) {
 	type Data struct {
