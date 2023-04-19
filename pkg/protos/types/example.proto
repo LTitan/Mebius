@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package github.com.LTitan.Mebius.pkg.protos.types;
+
+// Package-wide variables from generator "generated".
+option go_package = "github.com/LTitan/Mebius/pkg/protos/types;types";
+
+message ExampleRequest { string query = 1; }
+
+message ExampleResponse { string content = 1; }

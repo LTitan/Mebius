@@ -13,7 +13,7 @@ import (
 	"github.com/LTitan/Mebius/pkg/protos"
 	"github.com/LTitan/Mebius/pkg/utils/function"
 	"github.com/gin-gonic/gin"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
